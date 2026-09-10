@@ -406,6 +406,7 @@ export interface IBuilding {
 
 export interface IFloor {
   id: string;
+  code: string;
   buildingId: string;
   building?: IBuilding;
   floorNumber: number;

@@ -15,9 +15,11 @@ import {
   ShieldCheck,
   KeyRound,
   Sliders,
+  Building,
   Building2,
   Layers,
   DoorClosed,
+  Tag,
   Warehouse,
   Package,
   FolderTree,
@@ -154,6 +156,12 @@ const navigationGroups: NavGroup[] = [
         icon: <Building2 className="size-4" />,
         permission: "location.view",
       },
+      {
+        title: "Room Types",
+        url: "/locations/room-types",
+        icon: <Tag className="size-4" />,
+        permission: "location.view",
+      },
     ],
   },
   {
@@ -164,6 +172,12 @@ const navigationGroups: NavGroup[] = [
         url: "/users",
         icon: <Users className="size-4" />,
         permission: "user.view",
+      },
+      {
+        title: "Departments",
+        url: "/departments",
+        icon: <Building className="size-4" />,
+        permission: "department.view",
       },
       {
         title: "Roles",

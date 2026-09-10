@@ -18,9 +18,11 @@ import { cn } from "@/lib/utils";
 interface ConfirmDialogProps {
   trigger?: ReactNode;
   open?: boolean;
+  isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
   title: string;
-  description: string;
+  description: ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: "default" | "destructive";
@@ -31,7 +33,9 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   trigger,
   open,
+  isOpen,
   onOpenChange,
+  onClose,
   title,
   description,
   confirmText = "Confirm",
@@ -40,8 +44,14 @@ export function ConfirmDialog({
   onConfirm,
   isLoading = false,
 }: ConfirmDialogProps) {
+  const isDialogOpen = isOpen !== undefined ? isOpen : !!open;
+  const handleOpenChange = (newVal: boolean) => {
+    if (onOpenChange) onOpenChange(newVal);
+    if (!newVal && onClose) onClose();
+  };
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={isDialogOpen} onOpenChange={handleOpenChange}>
       {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
       <AlertDialogContent>
         <AlertDialogHeader>
