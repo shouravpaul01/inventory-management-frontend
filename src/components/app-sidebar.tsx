@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { NavMain } from "@/components/nav-main";
-
+import { NavMain, NavGroup } from "@/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
@@ -11,125 +10,278 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import {
-  GalleryVerticalEndIcon,
-  AudioLinesIcon,
-  TerminalIcon,
-  TerminalSquareIcon,
-  BotIcon,
-  BookOpenIcon,
-  Settings2Icon,
-  FrameIcon,
-  PieChartIcon,
-  MapIcon,
+  LayoutDashboard,
+  Users,
+  ShieldCheck,
+  KeyRound,
+  Sliders,
+  Building2,
+  Layers,
+  DoorClosed,
+  Warehouse,
+  Package,
+  FolderTree,
+  QrCode,
+  ScanLine,
+  Boxes,
+  History,
+  Hash,
+  ClipboardList,
+  Truck,
+  RotateCcw,
+  CheckSquare,
+  Bell,
+  ShieldAlert,
+  BarChart3,
   LogOut,
+  User as UserIcon,
 } from "lucide-react";
 import Logo from "./shared/Logo";
 import { Button } from "./ui/button";
-import { usePathname, useRouter } from "next/navigation";
-import { useAppDispatch } from "@/redux/hooks";
+import { useRouter } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout } from "@/redux/features/authSlice";
+import { useLogoutApiMutation } from "@/redux/api/authApi";
 import { toast } from "sonner";
+import Link from "next/link";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-// This is sample data.
-const data = [
+const navigationGroups: NavGroup[] = [
   {
-    title: "Playground",
-    url: "#",
-    icon: <TerminalSquareIcon />,
-    isActive: true,
+    label: "Overview",
     items: [
       {
-        title: "History",
-        url: "#",
-      },
-      {
-        title: "Starred",
-        url: "#",
-      },
-      {
-        title: "Settings",
-        url: "#",
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: <LayoutDashboard className="size-4" />,
       },
     ],
   },
   {
-    title: "Models",
-    url: "#",
-    icon: <BotIcon />,
+    label: "Operations",
     items: [
       {
-        title: "Genesis",
-        url: "#",
+        title: "Requisitions",
+        url: "/requisitions",
+        icon: <ClipboardList className="size-4" />,
+        permission: "requisition.view",
       },
       {
-        title: "Explorer",
-        url: "#",
+        title: "Distributions",
+        url: "/distributions",
+        icon: <Truck className="size-4" />,
+        permission: "distribution.view",
       },
       {
-        title: "Quantum",
-        url: "#",
+        title: "Returns",
+        url: "/returns",
+        icon: <RotateCcw className="size-4" />,
+        permission: "return.view",
       },
     ],
   },
   {
-    title: "Documentation",
-    url: "#",
-    icon: <BookOpenIcon />,
+    label: "Inventory Management",
     items: [
       {
-        title: "Introduction",
-        url: "#",
+        title: "Inventory Catalog",
+        url: "/inventory",
+        icon: <Package className="size-4" />,
+        permission: "inventory.view",
       },
       {
-        title: "Get Started",
-        url: "#",
+        title: "Categories",
+        url: "/categories",
+        icon: <FolderTree className="size-4" />,
+        permission: "category.view",
       },
       {
-        title: "Tutorials",
-        url: "#",
+        title: "Serialized Units",
+        url: "/inventory-units",
+        icon: <QrCode className="size-4" />,
+        permission: "inventory_unit.view",
       },
       {
-        title: "Changelog",
-        url: "#",
+        title: "Scan & Lookup",
+        url: "/inventory-units/lookup",
+        icon: <ScanLine className="size-4" />,
+        permission: "inventory_unit.qr_lookup",
+      },
+      {
+        title: "Stock Balances",
+        url: "/stock/balances",
+        icon: <Boxes className="size-4" />,
+        permission: "stock.view",
+      },
+      {
+        title: "Movement Ledger",
+        url: "/inventory/movements",
+        icon: <History className="size-4" />,
+        permission: "stock.view",
+      },
+      {
+        title: "Code Sequences",
+        url: "/inventory/code-sequences",
+        icon: <Hash className="size-4" />,
+        permission: "code_sequence.view",
       },
     ],
   },
   {
-    title: "Settings",
-    url: "#",
-    icon: <Settings2Icon />,
-   
+    label: "Locations",
+    items: [
+      {
+        title: "Storage Locations",
+        url: "/locations/stock",
+        icon: <Warehouse className="size-4" />,
+        permission: "location.view",
+      },
+      {
+        title: "Rooms",
+        url: "/locations/rooms",
+        icon: <DoorClosed className="size-4" />,
+        permission: "location.view",
+      },
+      {
+        title: "Floors",
+        url: "/locations/floors",
+        icon: <Layers className="size-4" />,
+        permission: "location.view",
+      },
+      {
+        title: "Buildings",
+        url: "/locations/buildings",
+        icon: <Building2 className="size-4" />,
+        permission: "location.view",
+      },
+    ],
   },
-
+  {
+    label: "Administration",
+    items: [
+      {
+        title: "Users",
+        url: "/users",
+        icon: <Users className="size-4" />,
+        permission: "user.view",
+      },
+      {
+        title: "Roles",
+        url: "/roles",
+        icon: <ShieldCheck className="size-4" />,
+        permission: "role.view",
+      },
+      {
+        title: "Permissions",
+        url: "/permissions",
+        icon: <KeyRound className="size-4" />,
+        permission: "role.view",
+      },
+      {
+        title: "Approval Policies",
+        url: "/approvals/policies",
+        icon: <Sliders className="size-4" />,
+        permission: "approval.manage_policy",
+      },
+    ],
+  },
+  {
+    label: "System",
+    items: [
+      {
+        title: "Approval Center",
+        url: "/approvals",
+        icon: <CheckSquare className="size-4" />,
+        permission: "approval.view",
+      },
+      {
+        title: "Notifications",
+        url: "/notifications",
+        icon: <Bell className="size-4" />,
+        permission: "notification.view",
+      },
+      {
+        title: "Audit Logs",
+        url: "/audit-logs",
+        icon: <ShieldAlert className="size-4" />,
+        permission: "audit.view",
+      },
+      {
+        title: "Reports & Analytics",
+        url: "/reports",
+        icon: <BarChart3 className="size-4" />,
+        permission: "report.view",
+      },
+    ],
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const handleLogout = () => {
-    dispatch(logout());
-    toast.success("Logged out successfully 👋");
-    router.push("/login");
+  const [logoutApi] = useLogoutApiMutation();
+  const { user } = useAppSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi().unwrap();
+    } catch {
+      // ignore api logout error
+    } finally {
+      dispatch(logout());
+      toast.success("Signed out successfully 👋");
+      router.replace("/login");
+    }
   };
+
+  const initials = user
+    ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase() || "U"
+    : "U";
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b px-4 py-3">
         <Logo />
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data} />
+
+      <SidebarContent className="px-2">
+        <NavMain groups={navigationGroups} />
       </SidebarContent>
-      <SidebarFooter>
+
+      <SidebarFooter className="border-t p-3 space-y-2">
+        {user && (
+          <Link
+            href="/profile"
+            className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted/70 transition-colors group"
+          >
+            <Avatar className="size-8 rounded-md shrink-0">
+              <AvatarFallback className="rounded-md bg-primary text-primary-foreground text-xs font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs font-semibold text-foreground truncate group-hover:text-primary">
+                {user.firstName} {user.lastName}
+              </span>
+              <span className="text-[10px] text-muted-foreground truncate">
+                {user.employeeId || user.email}
+              </span>
+            </div>
+            <UserIcon className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </Link>
+        )}
+
         <Button
           variant="outline"
-          className="w-full flex items-center justify-center gap-2 text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
-          onClick={() => handleLogout()}
+          size="sm"
+          className="w-full flex items-center justify-center gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive text-xs h-9"
+          onClick={handleLogout}
         >
-          <LogOut className="size-4" />
-          Logout
+          <LogOut className="size-3.5" />
+          <span>Sign Out</span>
         </Button>
       </SidebarFooter>
+
       <SidebarRail />
     </Sidebar>
   );

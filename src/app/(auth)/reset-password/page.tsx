@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useForm, FormProvider, FieldValues } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import SectionHeader from "@/components/shared/SectionHeader";
@@ -47,9 +47,8 @@ export default function ResetPasswordPage() {
       }
 
       await resetPassword({
-        reset_token:token,
-        password: data.password,
-      
+        resetToken: token,
+        newPassword: data.password,
       }).unwrap();
 
       toast.success("Password reset successful 🎉");

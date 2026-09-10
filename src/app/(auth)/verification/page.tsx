@@ -5,10 +5,9 @@ import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { toast } from "sonner";
+import { ArrowLeft, Loader2, KeyRound } from "lucide-react";
 
-import SectionHeader from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
-
 import {
   InputOTP,
   InputOTPGroup,
@@ -17,18 +16,19 @@ import {
 
 import { otpSchema } from "@/validation/auth.validation";
 import {
-  useVerifyOtpMutation,
-  useResendOtpMutation,
+  useVerifyResetOtpMutation,
+  useForgotPasswordMutation,
 } from "@/redux/api/authApi";
-import Image from "next/image";
-import { Heading } from "@/components/shared/typography";
+import Logo from "@/components/shared/Logo";
 
 export default function VerifyOtpPage() {
   const params = useSearchParams();
   const router = useRouter();
 
   const email = params.get("email");
-  const forgotPassword = params.get("forgot-password");
+
+  const [verifyResetOtp, { isLoading }] = useVerifyResetOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useForgotPasswordMutation();
 
   const methods = useForm({
     resolver: zodResolver(otpSchema),
@@ -43,77 +43,66 @@ export default function VerifyOtpPage() {
     formState: { errors },
   } = methods;
 
-  // Submit
   const onSubmit = async (data: { otp: string }) => {
     try {
       if (!email) {
-        toast.error("Email not found ❌");
+        toast.error("Email not found in verification request.");
         return;
       }
 
-      toast.success(
-        forgotPassword === "success"
-          ? "OTP verified! Reset your password."
-          : "OTP verified! Please log in.",
-      );
+      const res = await verifyResetOtp({
+        email,
+        otp: data.otp,
+      }).unwrap();
 
-      //  redirect with email
-      // forgotPassword === "success"
-      //   ? router.push(`/reset-password?token=${res?.data?.reset_token}`)
-      //   : router.push(`/login`);
+      if (res.success && res.data?.resetToken) {
+        toast.success("Security code verified successfully.");
+        router.push(`/reset-password?token=${encodeURIComponent(res.data.resetToken)}`);
+      }
     } catch (error: any) {
-      console.log(error);
-
-      const err = error?.data;
-
-      // Priority based message extract
-      const message =
-        err?.errors?.non_field_errors?.[0] ||
-        err?.errors?.email?.[0] ||
-        err?.message ||
-        "OTP verification failed ❌";
-
-      toast.error(message);
+      const apiError = error?.data;
+      toast.error(apiError?.message || "Invalid or expired verification code.");
     }
   };
 
-  // Resend OTP
   const handleResend = async () => {
-    try {
-      if (!email) return;
+    if (!email) {
+      toast.error("No email associated with this session.");
+      return;
+    }
 
-      toast.success("OTP sent again 📩");
+    try {
+      await resendOtp({ email }).unwrap();
+      toast.success("A new verification code has been dispatched.");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to resend OTP ❌");
+      toast.error(error?.data?.message || "Failed to resend code. Please try again later.");
     }
   };
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="relative hidden lg:block">
-        <Image
-          src="/images/verification.png"
-          alt="verification"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
-      <div className="flex flex-col p-6 md:p-10 items-center justify-center w-full">
-        {" "}
-        {/* w-full যোগ করুন */}
-        <div className="w-full max-w-md space-y-12">
-          
-          <SectionHeader
-          
-            title="Enter OTP"
-            description="We have share a code of your registered email address
-kristin.watson@example.com"
-          />
+    <div className="flex min-h-screen items-center justify-center p-6 bg-background">
+      <div className="w-full max-w-md space-y-6">
+        <div className="flex justify-center pb-2">
+          <Logo href="/login" />
+        </div>
+
+        <div className="rounded-2xl border bg-card p-8 shadow-sm space-y-6">
+          <div className="text-center space-y-2">
+            <div className="mx-auto size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+              <KeyRound className="size-6" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Two-Factor Verification
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Please enter the 6-digit security code transmitted to{" "}
+              <span className="font-semibold text-foreground">{email || "your email"}</span>
+            </p>
+          </div>
+
           <FormProvider {...methods}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {/* OTP */}
-              <div className="flex items-center ">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="flex flex-col items-center justify-center space-y-2">
                 <Controller
                   name="otp"
                   control={control}
@@ -123,54 +112,60 @@ kristin.watson@example.com"
                       value={field.value}
                       onChange={field.onChange}
                     >
-                      <InputOTPGroup className="w-full gap-4">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <InputOTPSlot
-                            key={i}
-                            index={i}
-                            className="bg-white size-12 border"
-                          />
-                        ))}
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
                       </InputOTPGroup>
                     </InputOTP>
                   )}
                 />
+                {errors.otp && (
+                  <p className="text-xs text-destructive text-center">
+                    {errors.otp.message}
+                  </p>
+                )}
               </div>
 
-              {/* Error */}
-              {errors.otp && (
-                <p className="text-sm text-red-500 text-center">
-                  {errors.otp.message as string}
-                </p>
-              )}
-
-              {/* Resend */}
-              <div className="text-left">
-                <Button
-                variant={"link"}
-                  type="button"
-                  onClick={handleResend}
-             
-                >
-                  Resend OTP
-                </Button>
-              </div>
-
-              {/* Submit */}
-              <Button type="submit" className="w-full h-12">
-                Verify OTP
+              <Button
+                type="submit"
+                className="w-full h-11 text-sm font-semibold"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                    Validating Code...
+                  </>
+                ) : (
+                  "Verify & Proceed"
+                )}
               </Button>
 
-              {/* Back */}
-              <p className="text-center text-sm text-muted-foreground pt-2">
-                Wrong email?{" "}
+              <div className="flex flex-col items-center gap-3 pt-2 text-xs text-muted-foreground">
+                <p>
+                  Didn’t receive the code?{" "}
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={isResending}
+                    className="text-primary font-semibold hover:underline disabled:opacity-50"
+                  >
+                    {isResending ? "Resending..." : "Resend Code"}
+                  </button>
+                </p>
+
                 <Link
-                  href="/forgot-password"
-                  className="text-primary font-semibold hover:underline"
+                  href="/login"
+                  className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground font-medium"
                 >
-                  Change email
+                  <ArrowLeft className="size-3" />
+                  Back to Sign In
                 </Link>
-              </p>
+              </div>
             </form>
           </FormProvider>
         </div>

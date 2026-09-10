@@ -1,32 +1,23 @@
-import { AppSidebar } from "@/components/app-sidebar"
+"use client";
 
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { ReactNode } from "react"
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ProtectedRoute } from "@/components/shared/auth/ProtectedRoute";
+import { DashboardHeader } from "@/components/shared/DashboardHeader";
+import { ReactNode } from "react";
 
-export default function DashboardLayout({children}:{children:ReactNode}) {
+export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-            />
-           
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  )
+    <ProtectedRoute>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <DashboardHeader />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            <div className="mx-auto max-w-7xl space-y-6">{children}</div>
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </ProtectedRoute>
+  );
 }

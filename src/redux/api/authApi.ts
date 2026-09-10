@@ -1,97 +1,80 @@
 import { baseApi } from "@/redux/api/baseApi";
+import { ApiResponse, IAuthUser } from "@/types";
+
+export interface LoginResponseData {
+  user: IAuthUser;
+  accessToken: string;
+  refreshToken: string;
+}
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation({
+    login: builder.mutation<ApiResponse<LoginResponseData>, { email?: string; username?: string; password: string }>({
       query: (credentials) => ({
         url: "/auth/login",
         method: "POST",
         body: credentials,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["Auth", "User"],
     }),
-    registerUser: builder.mutation({
-      query: (credentials) => ({
-        url: "/auth/register",
-        method: "POST",
-        body: credentials,
+
+    getMe: builder.query<ApiResponse<IAuthUser>, void>({
+      query: () => ({
+        url: "/auth/me",
+        method: "GET",
       }),
-      invalidatesTags: ["User"],
+      providesTags: ["Auth", "User"],
     }),
-    socialAuth: builder.mutation({
-      query: (credentials) => ({
-        url: "/auth/social-login",
+
+    changePassword: builder.mutation<ApiResponse<null>, { oldPassword: string; newPassword: string }>({
+      query: (body) => ({
+        url: "/auth/change-password",
         method: "POST",
-        body: credentials,
+        body,
       }),
-      invalidatesTags: ["User"],
     }),
-    forgotPassword: builder.mutation({
-      query: (email) => ({
+
+    forgotPassword: builder.mutation<ApiResponse<{ expiresIn: string }>, { email: string }>({
+      query: (body) => ({
         url: "/auth/forgot-password",
         method: "POST",
-        body: email,
+        body,
       }),
-      invalidatesTags: ["User"],
     }),
-    resendOtp: builder.mutation({
-      query: (email) => ({
-        url: "/auth/resend-otp",
+
+    verifyResetOtp: builder.mutation<ApiResponse<{ resetToken: string; expiresIn: string }>, { email: string; otp: string }>({
+      query: (body) => ({
+        url: "/auth/verify-reset-otp",
         method: "POST",
-        body: email,
+        body,
       }),
     }),
-    verifyOtp: builder.mutation({
-      query: (data) => ({
-        url: "/auth/verify-otp",
-        method: "POST",
-        body: data,
-      }),
-    }),
-    resetPassword: builder.mutation({
-      query: (data) => ({
+
+    resetPassword: builder.mutation<ApiResponse<null>, { resetToken: string; newPassword: string }>({
+      query: (body) => ({
         url: "/auth/reset-password",
         method: "POST",
-        body: data,
+        body,
       }),
     }),
-    changePassword: builder.mutation({
-      query: (data) => ({
-        url: "/auth/change-password",
-        method: "PATCH",
-        body: data,
-      }),
-    }),
-   
-    updateUser: builder.mutation({
-      query: (data) => ({
-        url: "/users/profile",
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["User"],
-    }),
-     logoutApi: builder.mutation({
+
+    logoutApi: builder.mutation<ApiResponse<null>, void>({
       query: () => ({
         url: "/auth/logout",
         method: "POST",
-        
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: ["Auth", "User"],
     }),
   }),
 });
 
 export const {
   useLoginMutation,
-  useRegisterUserMutation,
-  useSocialAuthMutation,
-  useForgotPasswordMutation,
-  useResendOtpMutation,
-  useVerifyOtpMutation,
-  useResetPasswordMutation,
+  useGetMeQuery,
+  useLazyGetMeQuery,
   useChangePasswordMutation,
-
-  useUpdateUserMutation,
-  useLogoutApiMutation
+  useForgotPasswordMutation,
+  useVerifyResetOtpMutation,
+  useResetPasswordMutation,
+  useLogoutApiMutation,
 } = authApi;
