@@ -8,9 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Bell, ShieldCheck, Building, Search, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useAppSelector } from "@/redux/hooks";
+import { useGetUnreadCountQuery } from "@/redux/api/notificationsApi";
 
 export function DashboardHeader() {
   const { user } = useAppSelector((state) => state.auth);
+  const { data: unreadRes } = useGetUnreadCountQuery(undefined, {
+    pollingInterval: 30000,
+  });
+  const unreadCount = unreadRes?.data?.count || 0;
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background/95 backdrop-blur-sm px-4 sticky top-0 z-30 transition-all">
@@ -70,6 +75,11 @@ export function DashboardHeader() {
         >
           <Link href="/notifications">
             <Bell className="size-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 size-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
             <span className="sr-only">Notifications</span>
           </Link>
         </Button>
