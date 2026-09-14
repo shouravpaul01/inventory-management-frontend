@@ -610,7 +610,11 @@ export type TAuditLog = {
   actor?: TUser | null;
   ipAddress?: string | null;
   userAgent?: string | null;
+  beforeData?: any;
+  afterData?: any;
   metadata?: any;
+  approvalRequired?: boolean;
+  approvalBypassed?: boolean;
   createdAt: string;
 };
 
