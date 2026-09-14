@@ -40,7 +40,7 @@ export default function RoleModal({
 }: RoleModalProps) {
   const isEdit = Boolean(role);
 
-  const { data: permsData } = useGetPermissionsQuery({ limit: 100 });
+  const { data: permsData } = useGetPermissionsQuery({ limit: 300 });
   const permissions = permsData?.data || [];
   const [selectedPermIds, setSelectedPermIds] = useState<string[]>([]);
 
@@ -149,8 +149,8 @@ export default function RoleModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[88vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[88vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="px-6 pt-5 pb-4 border-b border-border/60 shrink-0 pr-12">
           <DialogTitle className="flex items-center gap-2">
             <Shield className="size-5 text-primary" />
             {isEdit ? "Edit Role & Permissions" : "Define New System Role"}
@@ -165,102 +165,105 @@ export default function RoleModal({
         <FormProvider {...methods}>
           <form
             onSubmit={methods.handleSubmit(onSubmit)}
-            className="space-y-4 flex-1 overflow-hidden flex flex-col"
+            className="flex-1 overflow-hidden flex flex-col min-h-0"
           >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0">
-              <FormInput
-                name="name"
-                label="Role Name"
-                placeholder="e.g. Department Storekeeper"
-                disabled={isLoading}
-              />
-              <FormInput
-                name="code"
-                label="Role Code"
-                placeholder="e.g. STORE_KEEPER"
-                disabled={isLoading || isEdit}
-              />
-            </div>
-
-            <FormTextarea
-              name="description"
-              label="Role Description (Optional)"
-              placeholder="Scope of responsibilities and custody boundaries"
-              disabled={isLoading}
-              rows={2}
-              className="shrink-0"
-            />
-
-            {/* Permissions Matrix */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-1 border-t border-border/60 pt-3">
-              <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 pb-1">
-                <span className="text-xs font-semibold text-foreground">
-                  Module Permissions ({selectedPermIds.length} selected)
-                </span>
+            {/* Scrollable Middle Content with scrollbar flush to the right edge */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormInput
+                  name="name"
+                  label="Role Name"
+                  placeholder="e.g. Department Storekeeper"
+                  disabled={isLoading}
+                />
+                <FormInput
+                  name="code"
+                  label="Role Code"
+                  placeholder="e.g. STORE_KEEPER"
+                  disabled={isLoading || isEdit}
+                />
               </div>
 
-              {modules.map((moduleName) => {
-                const modulePerms = permissions.filter(
-                  (p) => p.module === moduleName
-                );
-                const isAllSelected = modulePerms.every((p) =>
-                  selectedPermIds.includes(p.id)
-                );
+              <FormTextarea
+                name="description"
+                label="Role Description (Optional)"
+                placeholder="Scope of responsibilities and custody boundaries"
+                disabled={isLoading}
+                rows={2}
+              />
 
-                return (
-                  <div
-                    key={moduleName}
-                    className="rounded-lg border border-border/70 p-3 space-y-2 bg-card/60"
-                  >
-                    <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
-                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        {moduleName} Module
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleModuleAll(moduleName)}
-                        className="text-[11px] text-primary hover:underline font-medium"
-                      >
-                        {isAllSelected ? "Deselect All" : "Select All"}
-                      </button>
-                    </div>
+              {/* Permissions Matrix */}
+              <div className="space-y-3 border-t border-border/60 pt-3">
+                <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 py-1.5 border-b border-border/40">
+                  <span className="text-xs font-semibold text-foreground">
+                    Module Permissions ({selectedPermIds.length} selected)
+                  </span>
+                </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {modulePerms.map((perm) => (
-                        <label
-                          key={perm.id}
-                          htmlFor={`perm-${perm.id}`}
-                          className="flex items-start space-x-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer select-none"
+                {modules.map((moduleName) => {
+                  const modulePerms = permissions.filter(
+                    (p) => p.module === moduleName
+                  );
+                  const isAllSelected =
+                    modulePerms.length > 0 &&
+                    modulePerms.every((p) => selectedPermIds.includes(p.id));
+
+                  return (
+                    <div
+                      key={moduleName}
+                      className="rounded-lg border border-border/70 p-3 space-y-2 bg-card/60"
+                    >
+                      <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          {moduleName} Module
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleModuleAll(moduleName)}
+                          className="text-[11px] text-primary hover:underline font-medium"
                         >
-                          <Checkbox
-                            id={`perm-${perm.id}`}
-                            checked={selectedPermIds.includes(perm.id)}
-                            onCheckedChange={(checked) => {
-                              setSelectedPermIds((prev) =>
-                                checked
-                                  ? [...prev.filter((id) => id !== perm.id), perm.id]
-                                  : prev.filter((id) => id !== perm.id)
-                              );
-                            }}
-                            className="mt-0.5"
-                          />
-                          <div className="flex flex-col text-left leading-tight">
-                            <span className="text-xs font-medium text-foreground">
-                              {perm.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-muted-foreground">
-                              {perm.code}
-                            </span>
-                          </div>
-                        </label>
-                      ))}
+                          {isAllSelected ? "Deselect All" : "Select All"}
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {modulePerms.map((perm) => (
+                          <label
+                            key={perm.id}
+                            htmlFor={`perm-${perm.id}`}
+                            className="flex items-start space-x-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer select-none"
+                          >
+                            <Checkbox
+                              id={`perm-${perm.id}`}
+                              checked={selectedPermIds.includes(perm.id)}
+                              onCheckedChange={(checked) => {
+                                setSelectedPermIds((prev) =>
+                                  checked
+                                    ? [...prev.filter((id) => id !== perm.id), perm.id]
+                                    : prev.filter((id) => id !== perm.id)
+                                );
+                              }}
+                              className="mt-0.5"
+                            />
+                            <div className="flex flex-col text-left leading-tight">
+                              <span className="text-xs font-medium text-foreground">
+                                {perm.name}
+                              </span>
+                              <span className="text-[10px] font-mono text-muted-foreground">
+                                {perm.code}
+                              </span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
-            <DialogFooter className="pt-2 border-t border-border/60 shrink-0">
+            {/* Fixed Footer */}
+            <DialogFooter className="px-6 py-3 border-t border-border/60 shrink-0 bg-muted/20">
               <Button
                 type="button"
                 variant="outline"
