@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, QrCode, Search, ScanBarcode, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, QrCode, Search, ScanBarcode, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import UnitTable from "@/components/units/UnitTable";
 import UnitModal from "@/components/units/UnitModal";
@@ -222,81 +223,87 @@ export default function InventoryUnitsPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Item Filter */}
-          <select
-            value={itemId}
-            onChange={(e) => {
-              setItemId(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Item"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Serialized Items</option>
-            {serializedItems.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name} ({item.code})
-              </option>
-            ))}
-          </select>
+          <div className="w-full sm:w-56">
+            <FilterSelect
+              placeholder="Item"
+              value={itemId}
+              onChange={(val) => {
+                setItemId(val);
+                setPage(1);
+              }}
+              options={serializedItems.map((item) => ({
+                label: `${item.name} (${item.code})`,
+                value: item.id,
+              }))}
+              includeAllOption
+              allLabel="All Serialized Items"
+            />
+          </div>
 
           {/* Status Filter */}
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value as TUnitStatus | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Status"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Statuses</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="ALLOCATED">Allocated</option>
-            <option value="ISSUED">Issued</option>
-            <option value="MAINTENANCE">Maintenance</option>
-            <option value="UNDER_REPAIR">Under Repair</option>
-            <option value="DAMAGED">Damaged</option>
-            <option value="DISPOSED">Disposed</option>
-            <option value="LOST">Lost</option>
-          </select>
+          <div className="w-full sm:w-40">
+            <FilterSelect
+              placeholder="Status"
+              value={status}
+              onChange={(val) => {
+                setStatus(val as TUnitStatus | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "Available", value: "AVAILABLE" },
+                { label: "Allocated", value: "ALLOCATED" },
+                { label: "Issued", value: "ISSUED" },
+                { label: "Maintenance", value: "MAINTENANCE" },
+                { label: "Under Repair", value: "UNDER_REPAIR" },
+                { label: "Damaged", value: "DAMAGED" },
+                { label: "Disposed", value: "DISPOSED" },
+                { label: "Lost", value: "LOST" },
+              ]}
+              includeAllOption
+              allLabel="All Statuses"
+            />
+          </div>
 
           {/* Condition Filter */}
-          <select
-            value={condition}
-            onChange={(e) => {
-              setCondition(e.target.value as TUnitCondition | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Condition"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Conditions</option>
-            <option value="NEW">New</option>
-            <option value="GOOD">Good</option>
-            <option value="FAIR">Fair</option>
-            <option value="POOR">Poor</option>
-            <option value="DAMAGED">Damaged</option>
-          </select>
+          <div className="w-full sm:w-36">
+            <FilterSelect
+              placeholder="Condition"
+              value={condition}
+              onChange={(val) => {
+                setCondition(val as TUnitCondition | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "New", value: "NEW" },
+                { label: "Good", value: "GOOD" },
+                { label: "Fair", value: "FAIR" },
+                { label: "Poor", value: "POOR" },
+                { label: "Damaged", value: "DAMAGED" },
+              ]}
+              includeAllOption
+              allLabel="All Conditions"
+            />
+          </div>
 
           {/* Location Filter */}
-          <select
-            value={locationId}
-            onChange={(e) => {
-              setLocationId(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Location"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Stock Locations</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name} ({loc.code})
-              </option>
-            ))}
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Location"
+              value={locationId}
+              onChange={(val) => {
+                setLocationId(val);
+                setPage(1);
+              }}
+              options={locations.map((loc) => ({
+                label: `${loc.name} (${loc.code})`,
+                value: loc.id,
+              }))}
+              includeAllOption
+              allLabel="All Stock Locations"
+            />
+          </div>
 
           {(searchTerm || itemId || status || condition || locationId) && (
             <Button
@@ -310,9 +317,10 @@ export default function InventoryUnitsPage() {
                 setLocationId("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>

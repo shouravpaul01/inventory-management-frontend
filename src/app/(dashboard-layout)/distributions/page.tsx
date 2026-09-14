@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, SendHorizontal, PackageCheck, Clock, CheckCircle2 } from "lucide-react";
+import { Plus, SendHorizontal, PackageCheck, Clock, CheckCircle2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import DistributionTable from "@/components/distributions/DistributionTable";
 import DistributionModal from "@/components/distributions/DistributionModal";
@@ -140,39 +141,45 @@ export default function DistributionsPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Delivery Status Filter */}
-          <select
-            value={deliveryStatus}
-            onChange={(e) => {
-              setDeliveryStatus(e.target.value as TDeliveryStatus | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Delivery Status"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Delivery Statuses</option>
-            <option value="PENDING">Pending Acknowledgment</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="RECEIVED">Received & Signed</option>
-            <option value="REJECTED">Rejected</option>
-          </select>
+          <div className="w-full sm:w-52">
+            <FilterSelect
+              placeholder="Delivery Status"
+              value={deliveryStatus}
+              onChange={(val) => {
+                setDeliveryStatus(val as TDeliveryStatus | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "Pending Acknowledgment", value: "PENDING" },
+                { label: "Delivered", value: "DELIVERED" },
+                { label: "Received & Signed", value: "RECEIVED" },
+                { label: "Rejected", value: "REJECTED" },
+              ]}
+              includeAllOption
+              allLabel="All Delivery Statuses"
+            />
+          </div>
 
           {/* Allocation Mode Filter */}
-          <select
-            value={issueMode}
-            onChange={(e) => {
-              setIssueMode(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Allocation Mode"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Allocation Policies</option>
-            <option value="PERMANENT">Permanent Allocation</option>
-            <option value="TEMPORARY">Temporary Loan</option>
-            <option value="GIFT">Gift Item</option>
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Allocation Policy"
+              value={issueMode}
+              onChange={(val) => {
+                setIssueMode(val);
+                setPage(1);
+              }}
+              options={[
+                { label: "Permanent Allocation", value: "PERMANENT" },
+                { label: "Temporary Loan", value: "TEMPORARY" },
+                { label: "Gift Item", value: "GIFT" },
+              ]}
+              includeAllOption
+              allLabel="All Allocation Policies"
+            />
+          </div>
 
           {(searchTerm || deliveryStatus || issueMode) && (
             <Button
@@ -184,9 +191,10 @@ export default function DistributionsPage() {
                 setIssueMode("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>

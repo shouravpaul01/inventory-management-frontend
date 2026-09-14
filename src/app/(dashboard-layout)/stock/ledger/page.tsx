@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { History, ArrowLeft, Boxes, Filter } from "lucide-react";
+import { History, ArrowLeft, Boxes, Filter, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import StockLedgerTable from "@/components/stock/StockLedgerTable";
 import { useGetStockMovementsQuery } from "@/redux/api/stockApi";
@@ -87,68 +88,71 @@ export default function StockLedgerPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Movement Type Filter */}
-          <select
-            value={type}
-            onChange={(e) => {
-              setType(e.target.value as TStockMovementType | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Movement Type"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Movement Types</option>
-            <option value="STOCK_IN">Stock Intake</option>
-            <option value="PURCHASE">Purchase Receipt</option>
-            <option value="INITIAL_STOCK">Initial Stock</option>
-            <option value="TRANSFER">Transfer</option>
-            <option value="DISTRIBUTION">Distribution</option>
-            <option value="RETURN">Return</option>
-            <option value="ADJUSTMENT">Adjustment</option>
-            <option value="STOCK_OUT">Stock Out</option>
-            <option value="DAMAGE">Damage</option>
-            <option value="LOSS">Loss</option>
-            <option value="DISPOSAL">Disposal</option>
-            <option value="RESERVATION">Reservation</option>
-            <option value="RESERVATION_RELEASE">Reservation Release</option>
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Movement Type"
+              value={type}
+              onChange={(val) => {
+                setType(val as TStockMovementType | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "Stock Intake", value: "STOCK_IN" },
+                { label: "Purchase Receipt", value: "PURCHASE" },
+                { label: "Initial Stock", value: "INITIAL_STOCK" },
+                { label: "Transfer", value: "TRANSFER" },
+                { label: "Distribution", value: "DISTRIBUTION" },
+                { label: "Return", value: "RETURN" },
+                { label: "Adjustment", value: "ADJUSTMENT" },
+                { label: "Stock Out", value: "STOCK_OUT" },
+                { label: "Damage", value: "DAMAGE" },
+                { label: "Loss", value: "LOSS" },
+                { label: "Disposal", value: "DISPOSAL" },
+                { label: "Reservation", value: "RESERVATION" },
+                { label: "Reservation Release", value: "RESERVATION_RELEASE" },
+              ]}
+              includeAllOption
+              allLabel="All Movement Types"
+            />
+          </div>
 
           {/* Item Filter */}
-          <select
-            value={itemId}
-            onChange={(e) => {
-              setItemId(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Item"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Catalog Items</option>
-            {items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name} ({item.code})
-              </option>
-            ))}
-          </select>
+          <div className="w-full sm:w-52">
+            <FilterSelect
+              placeholder="Item"
+              value={itemId}
+              onChange={(val) => {
+                setItemId(val);
+                setPage(1);
+              }}
+              options={items.map((item) => ({
+                label: `${item.name} (${item.code})`,
+                value: item.id,
+              }))}
+              includeAllOption
+              allLabel="All Catalog Items"
+            />
+          </div>
 
           {/* Location Filter */}
-          <select
-            value={locationId}
-            onChange={(e) => {
-              setLocationId(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Location"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Locations</option>
-            {locations.map((loc) => (
-              <option key={loc.id} value={loc.id}>
-                {loc.name} ({loc.code})
-              </option>
-            ))}
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Location"
+              value={locationId}
+              onChange={(val) => {
+                setLocationId(val);
+                setPage(1);
+              }}
+              options={locations.map((loc) => ({
+                label: `${loc.name} (${loc.code})`,
+                value: loc.id,
+              }))}
+              includeAllOption
+              allLabel="All Locations"
+            />
+          </div>
 
           {(searchTerm || type || itemId || locationId) && (
             <Button
@@ -161,9 +165,10 @@ export default function StockLedgerPage() {
                 setLocationId("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>

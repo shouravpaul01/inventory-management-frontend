@@ -7,10 +7,12 @@ import {
   CheckCircle2,
   XCircle,
   FileCheck,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import ApprovalTable from "@/components/approvals/ApprovalTable";
 import ApprovalDecisionModal from "@/components/approvals/ApprovalDecisionModal";
@@ -134,40 +136,46 @@ export default function ApprovalsPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Status Filter */}
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value as TApprovalStatus | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Status"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Statuses</option>
-            <option value="PENDING">Pending Action</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+          <div className="w-full sm:w-44">
+            <FilterSelect
+              placeholder="Status"
+              value={status}
+              onChange={(val) => {
+                setStatus(val as TApprovalStatus | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "Pending Action", value: "PENDING" },
+                { label: "Approved", value: "APPROVED" },
+                { label: "Rejected", value: "REJECTED" },
+                { label: "Cancelled", value: "CANCELLED" },
+              ]}
+              includeAllOption
+              allLabel="All Statuses"
+            />
+          </div>
 
           {/* Entity Type Filter */}
-          <select
-            value={entityType}
-            onChange={(e) => {
-              setEntityType(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Entity Type"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Entity Types</option>
-            <option value="Requisition">Requisitions</option>
-            <option value="Distribution">Distributions</option>
-            <option value="StockTransfer">Stock Transfers</option>
-            <option value="StockAdjustment">Stock Adjustments</option>
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Entity Type"
+              value={entityType}
+              onChange={(val) => {
+                setEntityType(val);
+                setPage(1);
+              }}
+              options={[
+                { label: "Requisitions", value: "Requisition" },
+                { label: "Distributions", value: "Distribution" },
+                { label: "Stock Transfers", value: "StockTransfer" },
+                { label: "Stock Adjustments", value: "StockAdjustment" },
+              ]}
+              includeAllOption
+              allLabel="All Entity Types"
+            />
+          </div>
 
           {(searchTerm || status || entityType) && (
             <Button
@@ -179,9 +187,10 @@ export default function ApprovalsPage() {
                 setEntityType("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ScrollText, Download, Filter, ShieldCheck } from "lucide-react";
+import { ScrollText, Download, Filter, ShieldCheck, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import AuditTable from "@/components/audit/AuditTable";
 import AuditDetailsModal from "@/components/audit/AuditDetailsModal";
@@ -114,55 +115,61 @@ export default function AuditLogsPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Module Filter */}
-          <select
-            value={moduleFilter}
-            onChange={(e) => {
-              setModuleFilter(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Module"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Modules</option>
-            <option value="Stock">Stock</option>
-            <option value="Requisition">Requisition</option>
-            <option value="Distribution">Distribution</option>
-            <option value="Return">Return</option>
-            <option value="Approval">Approval</option>
-            <option value="InventoryItem">Inventory Items</option>
-            <option value="InventoryUnit">Asset Units</option>
-            <option value="Location">Locations</option>
-            <option value="Department">Departments</option>
-            <option value="User">User & Auth</option>
-            <option value="RBAC">RBAC</option>
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Module"
+              value={moduleFilter}
+              onChange={(val) => {
+                setModuleFilter(val);
+                setPage(1);
+              }}
+              options={[
+                { label: "Stock", value: "Stock" },
+                { label: "Requisition", value: "Requisition" },
+                { label: "Distribution", value: "Distribution" },
+                { label: "Return", value: "Return" },
+                { label: "Approval", value: "Approval" },
+                { label: "Inventory Items", value: "InventoryItem" },
+                { label: "Asset Units", value: "InventoryUnit" },
+                { label: "Locations", value: "Location" },
+                { label: "Departments", value: "Department" },
+                { label: "User & Auth", value: "User" },
+                { label: "RBAC", value: "RBAC" },
+              ]}
+              includeAllOption
+              allLabel="All Modules"
+            />
+          </div>
 
           {/* Action Filter */}
-          <select
-            value={actionFilter}
-            onChange={(e) => {
-              setActionFilter(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Action"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Actions</option>
-            <option value="CREATE">CREATE</option>
-            <option value="UPDATE">UPDATE</option>
-            <option value="DELETE">DELETE</option>
-            <option value="LOGIN">LOGIN</option>
-            <option value="STOCK_IN">STOCK IN</option>
-            <option value="STOCK_OUT">STOCK OUT</option>
-            <option value="TRANSFER">TRANSFER</option>
-            <option value="ADJUST">ADJUST</option>
-            <option value="APPROVE">APPROVE</option>
-            <option value="REJECT">REJECT</option>
-            <option value="DISTRIBUTE">DISTRIBUTE</option>
-            <option value="RETURN">RETURN</option>
-          </select>
+          <div className="w-full sm:w-44">
+            <FilterSelect
+              placeholder="Action"
+              value={actionFilter}
+              onChange={(val) => {
+                setActionFilter(val);
+                setPage(1);
+              }}
+              options={[
+                { label: "CREATE", value: "CREATE" },
+                { label: "UPDATE", value: "UPDATE" },
+                { label: "DELETE", value: "DELETE" },
+                { label: "LOGIN", value: "LOGIN" },
+                { label: "STOCK IN", value: "STOCK_IN" },
+                { label: "STOCK OUT", value: "STOCK_OUT" },
+                { label: "TRANSFER", value: "TRANSFER" },
+                { label: "ADJUST", value: "ADJUST" },
+                { label: "APPROVE", value: "APPROVE" },
+                { label: "REJECT", value: "REJECT" },
+                { label: "DISTRIBUTE", value: "DISTRIBUTE" },
+                { label: "RETURN", value: "RETURN" },
+              ]}
+              includeAllOption
+              allLabel="All Actions"
+            />
+          </div>
 
           {(searchTerm || moduleFilter || actionFilter) && (
             <Button
@@ -174,9 +181,10 @@ export default function AuditLogsPage() {
                 setActionFilter("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>

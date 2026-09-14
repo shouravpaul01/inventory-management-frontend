@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import {
   Select,
   SelectContent,
@@ -7,20 +8,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-interface Option {
+export interface FilterOption {
   label: string;
   value: string;
   description?: string;
+  icon?: React.ReactNode;
 }
 
 interface FilterSelectProps {
   value?: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  options: Option[];
+  options: FilterOption[];
   includeAllOption?: boolean;
+  allLabel?: string;
+  className?: string;
+  disabled?: boolean;
 }
+
+const ALL_FILTER_VALUE = "__ALL__";
 
 export default function FilterSelect({
   value,
@@ -28,40 +36,71 @@ export default function FilterSelect({
   placeholder = "Select",
   options,
   includeAllOption = false,
+  allLabel,
+  className,
+  disabled = false,
 }: FilterSelectProps) {
-  const finalOptions = includeAllOption
-    ? [{ label: "All", value: "all" }, ...options]
-    : options;
+  const finalOptions: FilterOption[] = React.useMemo(() => {
+    if (!includeAllOption) return options;
+    const defaultAllLabel =
+      allLabel ||
+      (placeholder !== "Select" ? `All ${placeholder}s` : "All");
+    return [{ label: defaultAllLabel, value: ALL_FILTER_VALUE }, ...options];
+  }, [options, includeAllOption, allLabel, placeholder]);
 
-  const selectedOption = finalOptions.find((opt) => opt.value === value);
+  // If value is empty or undefined and includeAllOption is true, select the "All" item
+  const selectedValue = React.useMemo(() => {
+    if ((!value || value === "") && includeAllOption) {
+      return ALL_FILTER_VALUE;
+    }
+    return value || undefined;
+  }, [value, includeAllOption]);
+
+  const selectedOption = finalOptions.find((opt) => opt.value === selectedValue);
 
   return (
     <Select
-      value={value || undefined}
+      value={selectedValue}
       onValueChange={(val) => {
-        if (val === "all") {
+        if (val === ALL_FILTER_VALUE) {
           onChange("");
         } else {
-          onChange(val as string);
+          onChange(val);
         }
       }}
+      disabled={disabled}
     >
-      <SelectTrigger className="h-11! bg-white w-full">
+      <SelectTrigger
+        className={cn(
+          "h-11! bg-card hover:bg-accent/40 border-border/80 text-xs w-full shadow-2xs transition-colors rounded-lg font-normal text-foreground",
+          className
+        )}
+      >
         <SelectValue placeholder={placeholder}>
-          {selectedOption ? selectedOption.label : placeholder}
+          {selectedOption ? (
+            <span className="flex items-center gap-1.5 truncate">
+              {selectedOption.icon}
+              <span>{selectedOption.label}</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
         </SelectValue>
       </SelectTrigger>
 
-      <SelectContent>
+      <SelectContent className="max-h-72">
         {finalOptions.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            <div className="flex flex-col">
-              <span className="font-medium">{option.label}</span>
-              {option.description && (
-                <span className="text-xs text-muted-foreground">
-                  {option.description}
-                </span>
-              )}
+          <SelectItem key={option.value} value={option.value} className="text-xs">
+            <div className="flex items-center gap-2">
+              {option.icon}
+              <div className="flex flex-col">
+                <span className="font-medium text-foreground">{option.label}</span>
+                {option.description && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {option.description}
+                  </span>
+                )}
+              </div>
             </div>
           </SelectItem>
         ))}

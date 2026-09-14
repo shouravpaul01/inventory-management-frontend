@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import SectionHeader from "@/components/shared/SectionHeader";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import {
   useGetMyNotificationsQuery,
@@ -154,24 +155,26 @@ export default function NotificationsPage() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <select
+        <div className="w-48">
+          <FilterSelect
+            placeholder="Category"
             value={filterType}
-            onChange={(e) => {
-              setFilterType(e.target.value as TNotificationType | "");
+            onChange={(val) => {
+              setFilterType(val as TNotificationType | "");
               setPage(1);
             }}
-            aria-label="Filter by notification type"
-            className="h-8 px-2.5 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Categories</option>
-            <option value="REQUISITION">Requisitions</option>
-            <option value="APPROVAL">Approvals</option>
-            <option value="DISTRIBUTION">Distributions</option>
-            <option value="RETURN">Returns</option>
-            <option value="STOCK">Stock Alerts</option>
-            <option value="SYSTEM">System Notices</option>
-          </select>
+            options={[
+              { label: "Requisitions", value: "REQUISITION" },
+              { label: "Approvals", value: "APPROVAL" },
+              { label: "Distributions", value: "DISTRIBUTION" },
+              { label: "Returns", value: "RETURN" },
+              { label: "Stock Alerts", value: "STOCK" },
+              { label: "System Notices", value: "SYSTEM" },
+            ]}
+            includeAllOption
+            allLabel="All Categories"
+            className="h-9!"
+          />
         </div>
       </div>
 

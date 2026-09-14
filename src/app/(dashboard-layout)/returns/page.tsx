@@ -5,6 +5,7 @@ import { Plus, RotateCcw, CheckCircle2, AlertTriangle, Clock } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import ReturnTable from "@/components/returns/ReturnTable";
 import ReturnModal from "@/components/returns/ReturnModal";
@@ -126,23 +127,26 @@ export default function ReturnsPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Status Filter */}
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value as TReturnTransactionStatus | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Return Status"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Statuses</option>
-            <option value="RETURNED">Returned & Restocked</option>
-            <option value="PARTIALLY_RETURNED">Partially Returned</option>
-            <option value="OVERDUE">Overdue</option>
-            <option value="LOST">Lost</option>
-          </select>
+          <div className="w-full sm:w-56">
+            <FilterSelect
+              placeholder="Return Status"
+              value={status}
+              onChange={(val) => {
+                setStatus(val as TReturnTransactionStatus | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "Returned & Restocked", value: "RETURNED" },
+                { label: "Partially Returned", value: "PARTIALLY_RETURNED" },
+                { label: "Overdue", value: "OVERDUE" },
+                { label: "Lost", value: "LOST" },
+              ]}
+              includeAllOption
+              allLabel="All Return Statuses"
+            />
+          </div>
 
           {(searchTerm || status) && (
             <Button
@@ -153,9 +157,10 @@ export default function ReturnsPage() {
                 setStatus("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>

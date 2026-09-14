@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/shared/form/FormInput";
 import { FormTextarea } from "@/components/shared/form/FormTextarea";
 import { FormSelect } from "@/components/shared/form/FormSelect";
+import FilterSelect from "@/components/shared/FilterSelect";
 import {
   useCreateRoomMutation,
   useGetBuildingsQuery,
@@ -107,19 +108,15 @@ export default function RoomModal({ open, onOpenChange }: RoomModalProps) {
                 <label className="text-xs font-medium text-foreground">
                   Building Filter
                 </label>
-                <select
-                  aria-label="Building Filter"
+                <FilterSelect
+                  placeholder="Building"
                   value={selectedBuildingId}
-                  onChange={(e) => setSelectedBuildingId(e.target.value)}
-                  className="w-full h-10 px-3 text-xs rounded-md border border-input bg-background"
-                >
-                  <option value="">All Buildings</option>
-                  {buildingOptions.map((b) => (
-                    <option key={b.value} value={b.value}>
-                      {b.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setSelectedBuildingId(val)}
+                  options={buildingOptions}
+                  includeAllOption
+                  allLabel="All Buildings"
+                  className="h-10!"
+                />
               </div>
 
               <FormSelect

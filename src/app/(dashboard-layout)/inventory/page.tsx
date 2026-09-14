@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Package } from "lucide-react";
+import { Plus, Package, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import ItemTable from "@/components/inventory/ItemTable";
 import ItemModal from "@/components/inventory/ItemModal";
@@ -125,36 +126,56 @@ export default function InventoryPage() {
           />
         </div>
 
-        <select
-          aria-label="Filter by Category"
-          value={categoryId}
-          onChange={(e) => {
-            setCategoryId(e.target.value);
-            setPage(1);
-          }}
-          className="h-11 px-3 text-xs rounded-md border border-input bg-background w-full sm:w-48"
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-52">
+          <FilterSelect
+            placeholder="Category"
+            value={categoryId}
+            onChange={(val) => {
+              setCategoryId(val);
+              setPage(1);
+            }}
+            options={categories.map((cat) => ({
+              label: cat.name,
+              value: cat.id,
+            }))}
+            includeAllOption
+            allLabel="All Categories"
+          />
+        </div>
 
-        <select
-          aria-label="Filter by Tracking Strategy"
-          value={trackingType}
-          onChange={(e) => {
-            setTrackingType(e.target.value as any);
-            setPage(1);
-          }}
-          className="h-11 px-3 text-xs rounded-md border border-input bg-background w-full sm:w-40"
-        >
-          <option value="">All Tracking Types</option>
-          <option value="SERIALIZED">Serialized Assets</option>
-          <option value="BULK">Bulk Consumables</option>
-        </select>
+        <div className="w-full sm:w-48">
+          <FilterSelect
+            placeholder="Tracking Type"
+            value={trackingType}
+            onChange={(val) => {
+              setTrackingType(val as any);
+              setPage(1);
+            }}
+            options={[
+              { label: "Serialized Assets", value: "SERIALIZED" },
+              { label: "Bulk Consumables", value: "BULK" },
+            ]}
+            includeAllOption
+            allLabel="All Tracking Types"
+          />
+        </div>
+
+        {(searchTerm || categoryId || trackingType) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchTerm("");
+              setCategoryId("");
+              setTrackingType("");
+              setPage(1);
+            }}
+            className="h-11 px-3 text-xs text-muted-foreground hover:text-foreground gap-1.5 shrink-0 self-center sm:self-auto"
+          >
+            <RotateCcw className="size-3.5" />
+            <span>Reset</span>
+          </Button>
+        )}
       </div>
 
       {/* Item Table */}

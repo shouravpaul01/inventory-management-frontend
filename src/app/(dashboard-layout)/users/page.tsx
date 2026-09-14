@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import UserTable from "@/components/users/UserTable";
 import UserModal from "@/components/users/UserModal";
@@ -104,37 +105,57 @@ export default function UsersPage() {
           />
         </div>
 
-        <select
-          aria-label="Filter by Department"
-          value={departmentId}
-          onChange={(e) => {
-            setDepartmentId(e.target.value);
-            setPage(1);
-          }}
-          className="h-11 px-3 text-xs rounded-md border border-input bg-background w-full sm:w-48"
-        >
-          <option value="">All Departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+        <div className="w-full sm:w-52">
+          <FilterSelect
+            placeholder="Department"
+            value={departmentId}
+            onChange={(val) => {
+              setDepartmentId(val);
+              setPage(1);
+            }}
+            options={departments.map((d) => ({
+              label: d.name,
+              value: d.id,
+            }))}
+            includeAllOption
+            allLabel="All Departments"
+          />
+        </div>
 
-        <select
-          aria-label="Filter by Status"
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value as any);
-            setPage(1);
-          }}
-          className="h-11 px-3 text-xs rounded-md border border-input bg-background w-full sm:w-36"
-        >
-          <option value="">All Statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-          <option value="SUSPENDED">Suspended</option>
-        </select>
+        <div className="w-full sm:w-40">
+          <FilterSelect
+            placeholder="Status"
+            value={status}
+            onChange={(val) => {
+              setStatus(val as any);
+              setPage(1);
+            }}
+            options={[
+              { label: "Active", value: "ACTIVE" },
+              { label: "Inactive", value: "INACTIVE" },
+              { label: "Suspended", value: "SUSPENDED" },
+            ]}
+            includeAllOption
+            allLabel="All Statuses"
+          />
+        </div>
+
+        {(searchTerm || departmentId || status) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchTerm("");
+              setDepartmentId("");
+              setStatus("");
+              setPage(1);
+            }}
+            className="h-11 px-3 text-xs text-muted-foreground hover:text-foreground gap-1.5 shrink-0 self-center sm:self-auto"
+          >
+            <RotateCcw className="size-3.5" />
+            <span>Reset</span>
+          </Button>
+        )}
       </div>
 
       {/* User Table */}

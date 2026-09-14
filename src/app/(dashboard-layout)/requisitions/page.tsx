@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, FileText, Send, Trash2 } from "lucide-react";
+import { Plus, FileText, Send, Trash2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
 import Pagination from "@/components/shared/Pagination";
 import RequisitionTable from "@/components/requisitions/RequisitionTable";
 import RequisitionModal from "@/components/requisitions/RequisitionModal";
@@ -143,59 +144,65 @@ export default function RequisitionsPage() {
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Status Filter */}
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value as TRequisitionStatus | "");
-              setPage(1);
-            }}
-            aria-label="Filter by Status"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Statuses</option>
-            <option value="DRAFT">Draft</option>
-            <option value="SUBMITTED">Submitted</option>
-            <option value="UNDER_REVIEW">Under Review</option>
-            <option value="APPROVED">Approved</option>
-            <option value="PARTIALLY_APPROVED">Partially Approved</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+          <div className="w-full sm:w-44">
+            <FilterSelect
+              placeholder="Status"
+              value={status}
+              onChange={(val) => {
+                setStatus(val as TRequisitionStatus | "");
+                setPage(1);
+              }}
+              options={[
+                { label: "Draft", value: "DRAFT" },
+                { label: "Submitted", value: "SUBMITTED" },
+                { label: "Under Review", value: "UNDER_REVIEW" },
+                { label: "Approved", value: "APPROVED" },
+                { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
+                { label: "Rejected", value: "REJECTED" },
+                { label: "Cancelled", value: "CANCELLED" },
+              ]}
+              includeAllOption
+              allLabel="All Statuses"
+            />
+          </div>
 
           {/* Department Filter */}
-          <select
-            value={departmentId}
-            onChange={(e) => {
-              setDepartmentId(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Department"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Departments</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.name} ({dept.code})
-              </option>
-            ))}
-          </select>
+          <div className="w-full sm:w-48">
+            <FilterSelect
+              placeholder="Department"
+              value={departmentId}
+              onChange={(val) => {
+                setDepartmentId(val);
+                setPage(1);
+              }}
+              options={departments.map((dept) => ({
+                label: `${dept.name} (${dept.code})`,
+                value: dept.id,
+              }))}
+              includeAllOption
+              allLabel="All Departments"
+            />
+          </div>
 
           {/* Loan Filter */}
-          <select
-            value={isTemporary}
-            onChange={(e) => {
-              setIsTemporary(e.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by Loan Type"
-            className="h-9 px-3 text-xs rounded-md border border-input bg-background focus:outline-hidden focus:ring-1 focus:ring-ring"
-          >
-            <option value="">All Types</option>
-            <option value="true">Loans Only (Returnable)</option>
-            <option value="false">Permanent Only</option>
-          </select>
+          <div className="w-full sm:w-44">
+            <FilterSelect
+              placeholder="Request Type"
+              value={isTemporary}
+              onChange={(val) => {
+                setIsTemporary(val);
+                setPage(1);
+              }}
+              options={[
+                { label: "Loans Only (Returnable)", value: "true" },
+                { label: "Permanent Allocation", value: "false" },
+              ]}
+              includeAllOption
+              allLabel="All Request Types"
+            />
+          </div>
 
           {(searchTerm || status || departmentId || isTemporary) && (
             <Button
@@ -208,9 +215,10 @@ export default function RequisitionsPage() {
                 setIsTemporary("");
                 setPage(1);
               }}
-              className="text-xs h-9"
+              className="text-xs h-11 px-3 text-muted-foreground hover:text-foreground gap-1.5 shrink-0"
             >
-              Reset Filters
+              <RotateCcw className="size-3.5" />
+              <span>Reset</span>
             </Button>
           )}
         </div>
