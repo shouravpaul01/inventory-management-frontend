@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 interface FormTextareaProps {
   name: string;
@@ -15,6 +16,8 @@ interface FormTextareaProps {
   description?: string;
   rows?: number;
   disabled?: boolean;
+  required?: boolean;
+  className?: string;
 }
 
 export function FormTextarea({
@@ -24,6 +27,8 @@ export function FormTextarea({
   description,
   rows = 4,
   disabled = false,
+  required,
+  className,
 }: FormTextareaProps) {
   const {
     register,
@@ -44,7 +49,7 @@ export function FormTextarea({
           rows={rows}
           disabled={disabled}
           {...register(name)}
-          className="bg-white"
+          className={cn("bg-white", className)}
         />
       </FieldContent>
 
