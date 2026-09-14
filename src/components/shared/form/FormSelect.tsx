@@ -26,6 +26,7 @@ interface FormSelectProps {
   description?: string;
   options: SelectOption[];
   disabled?: boolean;
+  required?: boolean;
 }
 
 export function FormSelect({

@@ -28,6 +28,7 @@ interface FormInputProps {
   description?: string;
   type?: string;
   disabled?: boolean;
+  required?: boolean;
   startIcon?: IconConfig;
   endIcon?: IconConfig;
 }

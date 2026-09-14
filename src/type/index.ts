@@ -157,21 +157,83 @@ export type TLocationType =
   | "CUPBOARD"
   | "BIN";
 
-export type TLocation = {
+export type TBuilding = {
   id: string;
-  code: string;
   name: string;
+  code: string;
   description?: string | null;
-  locationType: TLocationType;
-  parentId?: string | null;
-  parent?: TLocation | null;
-  children?: TLocation[];
-  departmentId?: string | null;
-  department?: TDepartment | null;
-  isActive: boolean;
+  address?: string | null;
+  imageUrl?: string | null;
+  floors?: TFloor[];
   createdAt: string;
   updatedAt: string;
 };
+
+export type TFloor = {
+  id: string;
+  buildingId: string;
+  building?: TBuilding;
+  name: string;
+  code: string;
+  floorNumber?: number | null;
+  imageUrl?: string | null;
+  rooms?: TRoom[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TRoomType = {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TRoom = {
+  id: string;
+  floorId: string;
+  floor?: TFloor;
+  roomTypeId?: string | null;
+  roomType?: TRoomType | null;
+  name: string;
+  code: string;
+  capacity?: number | null;
+  description?: string | null;
+  status: "ACTIVE" | "INACTIVE";
+  imageUrl?: string | null;
+  stockLocations?: TStockLocation[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TStockLocationType =
+  | "STORE"
+  | "ROOM"
+  | "RACK"
+  | "SHELF"
+  | "CABINET"
+  | "OTHER";
+
+export type TStockLocation = {
+  id: string;
+  name: string;
+  code: string;
+  type: TStockLocationType;
+  description?: string | null;
+  buildingId?: string | null;
+  building?: TBuilding | null;
+  floorId?: string | null;
+  floor?: TFloor | null;
+  roomId?: string | null;
+  room?: TRoom | null;
+  imageUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TLocation = TStockLocation;
 
 export type TInventoryItem = {
   id: string;
