@@ -618,13 +618,29 @@ export type TAuditLog = {
   createdAt: string;
 };
 
+export type TNotificationType =
+  | "SYSTEM"
+  | "APPROVAL"
+  | "REQUISITION"
+  | "DISTRIBUTION"
+  | "RETURN"
+  | "DELIVERY"
+  | "STOCK"
+  | "ALERT"
+  | "INFO"
+  | "WARNING"
+  | "SUCCESS"
+  | "DANGER";
+
 export type TNotification = {
   id: string;
   userId: string;
   title: string;
   message: string;
-  type: "INFO" | "SUCCESS" | "WARNING" | "DANGER";
+  type: TNotificationType;
   isRead: boolean;
+  referenceType?: string | null;
+  referenceId?: string | null;
   link?: string | null;
   metadata?: any;
   createdAt: string;

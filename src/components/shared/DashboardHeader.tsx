@@ -21,6 +21,7 @@ import { useLogoutApiMutation } from "@/redux/api/authApi";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 export default function DashboardHeader() {
   const router = useRouter();
@@ -79,17 +80,8 @@ export default function DashboardHeader() {
 
       {/* Right section: Notifications + User Dropdown */}
       <div className="flex items-center gap-2">
-        {/* Notification Bell */}
-        <Link href="/notifications">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative size-9 text-muted-foreground hover:text-foreground"
-            aria-label="View notifications"
-          >
-            <Bell className="size-4" />
-          </Button>
-        </Link>
+        {/* Notification Bell Dropdown */}
+        <NotificationDropdown />
 
         {/* User profile dropdown */}
         <DropdownMenu>
