@@ -551,40 +551,52 @@ export type TDistribution = {
   updatedAt?: string;
 };
 
-export type TReturnType = "DAMAGED" | "EXCESS" | "MAINTENANCE" | "PERMANENT";
-export type TReturnStatus = "REQUESTED" | "UNDER_INSPECTION" | "ACCEPTED" | "REJECTED";
+export type TReturnConditionType = "SAME" | "GOOD" | "DAMAGED" | "LOST" | "NEEDS_REPAIR";
+export type TReturnTransactionStatus = "EXPECTED" | "PARTIALLY_RETURNED" | "RETURNED" | "OVERDUE" | "LOST";
 
 export type TReturnItem = {
   id: string;
-  returnId: string;
-  itemId: string;
+  returnTransactionId?: string;
+  returnId?: string;
+  inventoryItemId: string;
+  itemId?: string;
+  inventoryItem?: TInventoryItem;
   item?: TInventoryItem;
+  inventoryUnitId?: string | null;
   unitId?: string | null;
+  inventoryUnit?: TInventoryUnit | null;
   unit?: TInventoryUnit | null;
+  destinationLocationId?: string;
   quantity: number;
-  condition: TUnitCondition;
-  reason: string;
-  actionTaken?: string | null;
-  createdAt: string;
+  condition: TReturnConditionType;
+  remarks?: string | null;
+  createdAt?: string;
 };
+
+export type TReturnLine = TReturnItem;
 
 export type TReturn = {
   id: string;
-  returnNo: string;
-  distributionId?: string | null;
+  returnNumber: string;
+  returnNo?: string;
+  distributionId: string;
   distribution?: TDistribution | null;
   requisitionId?: string | null;
   requisition?: TRequisition | null;
-  returnType: TReturnType;
-  status: TReturnStatus;
-  returnedById: string;
+  status: TReturnTransactionStatus;
+  processedById?: string;
+  processedBy?: TUser;
+  returnedById?: string;
   returnedBy?: TUser;
   destinationLocationId?: string | null;
-  destinationLocation?: TLocation | null;
-  items: TReturnItem[];
+  destinationLocation?: TStockLocation | null;
+  lines: TReturnLine[];
+  items?: TReturnLine[];
+  remarks?: string | null;
   notes?: string | null;
+  returnedAt?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 };
 
 // ==================== SYSTEM TYPES ====================
