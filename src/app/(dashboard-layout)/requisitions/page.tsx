@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Plus, FileText, Send, Trash2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SectionHeader from "@/components/shared/SectionHeader";
@@ -121,13 +122,12 @@ export default function RequisitionsPage() {
         />
 
         {can("requisition.create") && (
-          <Button
-            onClick={() => setCreateModalOpen(true)}
-            className="flex items-center gap-2 shadow-xs"
-          >
-            <Plus className="size-4" />
-            New Requisition
-          </Button>
+          <Link href="/requisitions/new">
+            <Button className="flex items-center gap-2 shadow-xs cursor-pointer">
+              <Plus className="size-4" />
+              New Requisition
+            </Button>
+          </Link>
         )}
       </div>
 
