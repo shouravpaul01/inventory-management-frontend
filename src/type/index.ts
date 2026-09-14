@@ -480,42 +480,75 @@ export type TRequisition = {
 };
 
 export type TRecipientType = "INDIVIDUAL" | "DEPARTMENT" | "EVENT" | "EXTERNAL_GUEST";
-export type TDistributionStatus = "DRAFT" | "DISPATCHED" | "CONFIRMED" | "CANCELLED";
+export type TDistributionStatus = "ISSUED" | "CONFIRMED" | "CANCELLED" | "DRAFT" | "DISPATCHED";
+export type TDeliveryStatus = "PENDING" | "DELIVERED" | "RECEIVED" | "REJECTED" | "FAILED";
 
-export type TDistributionItem = {
+export type TDeliveryConfirmation = {
   id: string;
   distributionId: string;
-  itemId: string;
-  item?: TInventoryItem;
-  unitId?: string | null;
-  unit?: TInventoryUnit | null;
-  quantity: number;
-  remarks?: string | null;
+  deliveryStatus: TDeliveryStatus;
+  confirmedAt?: string | null;
+  signatureUrl?: string | null;
+  receiverRemarks?: string | null;
+  deliveredById?: string | null;
+  deliveredBy?: TUser | null;
   createdAt: string;
 };
+
+export type TDistributionLine = {
+  id: string;
+  distributionId?: string;
+  requisitionLineId?: string | null;
+  inventoryItemId: string;
+  itemId?: string;
+  inventoryItem?: TInventoryItem;
+  item?: TInventoryItem;
+  inventoryUnitId?: string | null;
+  unitId?: string | null;
+  inventoryUnit?: TInventoryUnit | null;
+  unit?: TInventoryUnit | null;
+  locationId?: string;
+  quantity: number;
+  issueMode?: "PERMANENT" | "TEMPORARY" | "GIFT";
+  condition?: string;
+  expectedReturnAt?: string | null;
+  remarks?: string | null;
+  createdAt?: string;
+};
+
+export type TDistributionItem = TDistributionLine;
 
 export type TDistribution = {
   id: string;
   distributionNo: string;
   requisitionId: string;
   requisition?: TRequisition;
+  issuedById?: string;
+  issuedBy?: TUser;
+  distributedById?: string;
+  distributedBy?: TUser;
+  receiverId: string;
+  receiver?: TUser;
   recipientId?: string | null;
   recipient?: TUser | null;
   recipientName?: string | null;
-  recipientType: TRecipientType;
-  departmentId: string;
+  recipientType?: TRecipientType;
+  departmentId?: string;
   department?: TDepartment;
-  distributedById: string;
-  distributedBy?: TUser;
+  issueMode?: "PERMANENT" | "TEMPORARY" | "GIFT";
   status: TDistributionStatus;
-  disbursedAt: string;
+  deliveryStatus?: TDeliveryStatus;
+  handoverMethod?: "SELF_COLLECTION" | "DELIVERED_BY_STAFF" | "COURIER" | "OTHER";
+  expectedReturnAt?: string | null;
+  remarks?: string | null;
   deliveryNotes?: string | null;
+  deliveryConfirmation?: TDeliveryConfirmation | null;
   confirmedAt?: string | null;
-  confirmationMethod?: string | null;
   signatureUrl?: string | null;
-  items: TDistributionItem[];
+  lines: TDistributionLine[];
+  items?: TDistributionLine[];
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 };
 
 export type TReturnType = "DAMAGED" | "EXCESS" | "MAINTENANCE" | "PERMANENT";
