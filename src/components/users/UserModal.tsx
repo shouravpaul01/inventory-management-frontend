@@ -48,7 +48,7 @@ export default function UserModal({
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
   const { data: deptData } = useGetDepartmentsQuery({ limit: 100 });
-  const { data: rolesData } = useGetRolesQuery({ limit: 100 });
+  const { data: rolesData } = useGetRolesQuery();
 
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();

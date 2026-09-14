@@ -4,6 +4,7 @@ import { TApiResponse, TPermission, TRole } from "@/type";
 export type TPermissionQueryParams = {
   searchTerm?: string;
   module?: string;
+  code?: string;
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -12,6 +13,8 @@ export type TPermissionQueryParams = {
 
 export type TRoleQueryParams = {
   searchTerm?: string;
+  code?: string;
+  isSystemRole?: boolean;
   page?: number;
   limit?: number;
   sortBy?: string;
