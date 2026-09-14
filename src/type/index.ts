@@ -235,62 +235,66 @@ export type TStockLocation = {
 
 export type TLocation = TStockLocation;
 
+export type TTrackingType = "SERIALIZED" | "BULK";
+export type TIssuePolicy = "PERMANENT" | "TEMPORARY" | "GIFT";
+
 export type TInventoryItem = {
   id: string;
-  itemCode: string;
   name: string;
-  genericName?: string | null;
+  code: string;
+  itemCode?: string;
+  sku?: string | null;
   description?: string | null;
-  itemType: TItemType;
-  unitOfMeasure: TUnitOfMeasure;
-  minReorderLevel: number;
-  maxReorderLevel?: number | null;
-  isAsset: boolean;
-  isConsumable: boolean;
   categoryId: string;
   category?: TCategory;
-  subCategoryId?: string | null;
-  subCategory?: TCategory | null;
-  primarySupplierId?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  trackingType: TTrackingType;
+  isReturnable: boolean;
+  defaultIssuePolicy: TIssuePolicy;
+  unitName: string;
+  minimumStock: number;
+  reorderLevel: number;
   imageUrl?: string | null;
   imagePublicId?: string | null;
   isActive: boolean;
-  stockBalance?: {
-    quantity: number;
-    availableQuantity: number;
-    reservedQuantity: number;
-  };
+  stockBalances?: TStockBalance[];
+  units?: TInventoryUnit[];
+  totalStock?: number;
+  availableStock?: number;
   createdAt: string;
   updatedAt: string;
 };
 
 export type TUnitStatus =
   | "AVAILABLE"
+  | "ALLOCATED"
   | "RESERVED"
   | "ISSUED"
-  | "DAMAGED"
+  | "MAINTENANCE"
   | "UNDER_REPAIR"
+  | "DAMAGED"
   | "DISPOSED"
   | "LOST";
 
-export type TUnitCondition = "NEW" | "GOOD" | "FAIR" | "POOR";
+export type TUnitCondition = "NEW" | "GOOD" | "FAIR" | "POOR" | "DAMAGED";
 
 export type TInventoryUnit = {
   id: string;
-  unitBarcode: string;
+  uniqueCode: string;
+  unitBarcode?: string;
+  barcode?: string | null;
   serialNumber?: string | null;
   status: TUnitStatus;
   condition: TUnitCondition;
-  itemId: string;
-  item?: TInventoryItem;
-  locationId: string;
-  location?: TLocation;
+  inventoryItemId: string;
+  inventoryItem?: TInventoryItem;
+  locationId?: string | null;
+  location?: TStockLocation | null;
   departmentId?: string | null;
   department?: TDepartment | null;
-  requisitionId?: string | null;
-  costPrice?: number | null;
   purchaseDate?: string | null;
-  warrantyExpiry?: string | null;
+  warrantyEndDate?: string | null;
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
