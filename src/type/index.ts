@@ -381,34 +381,53 @@ export type TRequisitionStatus =
   | "SUBMITTED"
   | "UNDER_REVIEW"
   | "APPROVED"
+  | "PARTIALLY_APPROVED"
   | "REJECTED"
-  | "CANCELLED"
+  | "CANCELLED";
+
+export type TFulfillmentStatus =
+  | "PENDING"
   | "PARTIALLY_FULFILLED"
   | "FULFILLED";
 
-export type TRequisitionItem = {
+export type TRequestLineStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "PARTIALLY_APPROVED"
+  | "REJECTED";
+
+export type TRequisitionLine = {
   id: string;
-  requisitionId: string;
-  itemId: string;
+  requisitionId?: string;
+  inventoryItemId: string;
+  itemId?: string;
+  inventoryItem?: TInventoryItem;
   item?: TInventoryItem;
   requestedQty: number;
-  approvedQty?: number | null;
-  distributedQty: number;
+  approvedQty: number;
+  issuedQty?: number;
+  returnedQty?: number;
+  status: TRequestLineStatus;
+  requestedIssuePolicy?: TIssuePolicy;
   remarks?: string | null;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
+
+export type TRequisitionItem = TRequisitionLine;
 
 export type TApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type TApprovalRecord = {
   id: string;
-  stepNumber: number;
-  approverId: string;
+  stepNumber?: number;
+  level?: number;
+  approverId?: string;
   approver?: TUser;
   status: TApprovalStatus;
   comments?: string | null;
   decisionAt?: string | null;
+  actedAt?: string | null;
   createdAt: string;
 };
 
@@ -417,7 +436,7 @@ export type TApprovalRequest = {
   entityType: string;
   entityId: string;
   status: TApprovalStatus;
-  currentStep: number;
+  currentStep?: number;
   records: TApprovalRecord[];
   createdAt: string;
   updatedAt: string;
@@ -425,23 +444,28 @@ export type TApprovalRequest = {
 
 export type TRequisition = {
   id: string;
-  requisitionNo: string;
-  title: string;
+  requestNumber: string;
+  requisitionNo?: string;
+  type?: "REQUISITION" | "ORDER";
   purpose: string;
-  issueMode: TIssueMode;
-  priority: TRequisitionPriority;
+  title?: string;
+  issueMode?: TIssueMode;
+  priority?: TRequisitionPriority;
   status: TRequisitionStatus;
+  fulfillmentStatus?: TFulfillmentStatus;
+  isTemporary: boolean;
+  requiredFrom?: string | null;
+  requiredUntil?: string | null;
   requesterId: string;
   requester?: TUser;
   departmentId: string;
   department?: TDepartment;
-  items: TRequisitionItem[];
+  lines: TRequisitionLine[];
+  items?: TRequisitionLine[];
   approvalRequestId?: string | null;
   approvalRequest?: TApprovalRequest | null;
   remarks?: string | null;
-  requiredDate?: string | null;
   createdAt: string;
-  updatedAt: string;
 };
 
 export type TRecipientType = "INDIVIDUAL" | "DEPARTMENT" | "EVENT" | "EXTERNAL_GUEST";
