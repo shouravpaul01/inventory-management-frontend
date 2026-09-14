@@ -60,10 +60,12 @@ export default function UnitUpdateModal({
       notes: "",
     },
   });
+  const { reset } = methods;
 
   useEffect(() => {
+    if (!open) return;
     if (unit) {
-      methods.reset({
+      reset({
         serialNumber: unit.serialNumber || "",
         barcode: unit.barcode || "",
         condition: unit.condition || "GOOD",
@@ -72,7 +74,7 @@ export default function UnitUpdateModal({
         notes: unit.notes || "",
       });
     }
-  }, [unit, open, methods]);
+  }, [unit?.id, open, reset]);
 
   const onSubmit = async (data: TUpdateUnitInput) => {
     if (!unit) return;

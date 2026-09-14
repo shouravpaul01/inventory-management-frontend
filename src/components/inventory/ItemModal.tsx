@@ -91,12 +91,14 @@ export default function ItemModal({
     },
   });
 
-  const { watch, setValue } = methods;
+  const { watch, setValue, reset } = methods;
   const isReturnable = watch("isReturnable");
 
   useEffect(() => {
+    if (!open) return;
+
     if (item) {
-      methods.reset({
+      reset({
         name: item.name,
         code: item.code,
         sku: item.sku || "",
@@ -112,7 +114,7 @@ export default function ItemModal({
         description: item.description || "",
       });
     } else {
-      methods.reset({
+      reset({
         name: "",
         code: "",
         sku: "",
@@ -128,7 +130,7 @@ export default function ItemModal({
         description: "",
       });
     }
-  }, [item, open, methods]);
+  }, [item?.id, open, reset]);
 
   const onSubmit = async (data: TItemFormInput) => {
     try {

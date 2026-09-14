@@ -65,23 +65,27 @@ export default function CategoryModal({
     },
   });
 
+  const { reset } = methods;
+
   useEffect(() => {
+    if (!open) return;
+
     if (category) {
-      methods.reset({
+      reset({
         name: category.name,
         code: category.code,
         description: category.description || "",
         parentId: category.parentId || "",
       });
     } else {
-      methods.reset({
+      reset({
         name: "",
         code: "",
         description: "",
         parentId: "",
       });
     }
-  }, [category, open, methods]);
+  }, [category?.id, open, reset]);
 
   const onSubmit = async (data: TCategoryFormInput) => {
     try {

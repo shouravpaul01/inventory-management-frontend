@@ -69,6 +69,7 @@ export default function StockAdjustModal({
   const newQty = watch("newQuantity");
 
   useEffect(() => {
+    if (!open) return;
     if (balance) {
       reset({
         inventoryItemId: balance.inventoryItemId,
@@ -77,7 +78,7 @@ export default function StockAdjustModal({
         notes: "",
       });
     }
-  }, [balance, reset]);
+  }, [balance?.id, open, reset]);
 
   const currentQty = balance?.quantity ?? 0;
   const delta = (Number(newQty) || 0) - currentQty;

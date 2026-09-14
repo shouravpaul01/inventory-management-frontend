@@ -142,6 +142,7 @@ export default function DistributionModal({
 
   // When requisition is selected, auto-populate receiver and lines
   useEffect(() => {
+    if (!open) return;
     if (selectedReqId) {
       const foundReq = approvedReqs.find((r) => r.id === selectedReqId);
       if (foundReq) {
@@ -168,7 +169,7 @@ export default function DistributionModal({
         }
       }
     }
-  }, [selectedReqId, approvedReqs, setValue, locations]);
+  }, [selectedReqId, approvedReqs, setValue, locations, open]);
 
   const onSubmit = async (values: TCreateDistributionInput) => {
     try {

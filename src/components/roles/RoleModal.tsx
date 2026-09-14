@@ -61,9 +61,13 @@ export default function RoleModal({
     },
   });
 
+  const { reset } = methods;
+
   useEffect(() => {
+    if (!open) return;
+
     if (role) {
-      methods.reset({
+      reset({
         name: role.name,
         code: role.code,
         description: role.description || "",
@@ -76,14 +80,14 @@ export default function RoleModal({
         : [];
       setSelectedPermIds(currentPermIds.filter(Boolean));
     } else {
-      methods.reset({
+      reset({
         name: "",
         code: "",
         description: "",
       });
       setSelectedPermIds([]);
     }
-  }, [role, open, methods]);
+  }, [role?.id, open, reset]);
 
   // Group permissions by module
   const modules = Array.from(new Set(permissions.map((p) => p.module))).sort();

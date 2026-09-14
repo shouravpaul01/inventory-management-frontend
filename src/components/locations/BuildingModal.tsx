@@ -55,23 +55,27 @@ export default function BuildingModal({
     },
   });
 
+  const { reset } = methods;
+
   useEffect(() => {
+    if (!open) return;
+
     if (building) {
-      methods.reset({
+      reset({
         name: building.name,
         code: building.code,
         description: building.description || "",
         address: building.address || "",
       });
     } else {
-      methods.reset({
+      reset({
         name: "",
         code: "",
         description: "",
         address: "",
       });
     }
-  }, [building, open, methods]);
+  }, [building?.id, open, reset]);
 
   const onSubmit = async (data: TCreateBuildingInput) => {
     try {

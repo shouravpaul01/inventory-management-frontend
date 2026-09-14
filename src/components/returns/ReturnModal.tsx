@@ -120,6 +120,7 @@ export default function ReturnModal({
 
   // When distribution is picked, prefill items from distribution lines
   useEffect(() => {
+    if (!open) return;
     if (selectedDistId) {
       const foundDist = distributions.find((d) => d.id === selectedDistId);
       if (foundDist) {
@@ -137,7 +138,7 @@ export default function ReturnModal({
         }
       }
     }
-  }, [selectedDistId, distributions, setValue, locations]);
+  }, [selectedDistId, distributions, setValue, locations, open]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

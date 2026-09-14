@@ -78,9 +78,13 @@ export default function UserModal({
     },
   });
 
+  const { reset } = methods;
+
   useEffect(() => {
+    if (!open) return;
+
     if (user) {
-      methods.reset({
+      reset({
         employeeId: user.employeeId,
         username: user.username,
         email: user.email,
@@ -91,11 +95,13 @@ export default function UserModal({
       });
 
       const currentRoleIds = Array.isArray(user.roles)
-        ? user.roles.map((r: any) => (typeof r === "string" ? r : r.roleId || r.role?.id))
+        ? user.roles.map((r: any) =>
+            typeof r === "string" ? r : r.roleId || r.role?.id
+          )
         : [];
       setSelectedRoleIds(currentRoleIds.filter(Boolean));
     } else {
-      methods.reset({
+      reset({
         employeeId: "",
         username: "",
         email: "",
@@ -107,7 +113,7 @@ export default function UserModal({
       });
       setSelectedRoleIds([]);
     }
-  }, [user, open, methods]);
+  }, [open, user?.id, reset]);
 
   const toggleRole = (roleId: string) => {
     setSelectedRoleIds((prev) =>

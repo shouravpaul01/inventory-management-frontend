@@ -51,8 +51,7 @@ export default function DeliveryConfirmModal({
       receiverRemarks: "",
     },
   });
-
-  if (!distribution) return null;
+  const { reset } = methods;
 
   const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -63,6 +62,7 @@ export default function DeliveryConfirmModal({
   };
 
   const onSubmit = async (values: TConfirmDeliveryInput) => {
+    if (!distribution) return;
     try {
       const formData = new FormData();
       formData.append(
@@ -82,7 +82,7 @@ export default function DeliveryConfirmModal({
       }).unwrap();
 
       toast.success("Delivery receipt acknowledged and recorded successfully.");
-      methods.reset();
+      reset();
       setSignatureFile(null);
       setSignaturePreview(null);
       onOpenChange(false);
@@ -94,15 +94,17 @@ export default function DeliveryConfirmModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-emerald-600 font-bold">
-            <PackageCheck className="size-5" />
-            Acknowledge Delivery: {distribution.distributionNo}
-          </DialogTitle>
-          <DialogDescription>
-            Confirm physical receipt of dispatched supplies and provide recipient signature proof.
-          </DialogDescription>
-        </DialogHeader>
+        {distribution && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-emerald-600 font-bold">
+                <PackageCheck className="size-5" />
+                Acknowledge Delivery: {distribution.distributionNo}
+              </DialogTitle>
+              <DialogDescription>
+                Confirm physical receipt of dispatched supplies and provide recipient signature proof.
+              </DialogDescription>
+            </DialogHeader>
 
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4 py-2">
@@ -172,6 +174,8 @@ export default function DeliveryConfirmModal({
             </DialogFooter>
           </form>
         </FormProvider>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -40,6 +40,7 @@ export default function UserPermissionsModal({
   >({});
 
   useEffect(() => {
+    if (!open) return;
     if (user && Array.isArray(user.permissions)) {
       const initial: Record<string, "GRANT" | "REVOKE" | "DEFAULT"> = {};
       user.permissions.forEach((up: any) => {
@@ -51,7 +52,7 @@ export default function UserPermissionsModal({
     } else {
       setOverrideMap({});
     }
-  }, [user, open]);
+  }, [user?.id, open]);
 
   // Group permissions by module
   const modules = Array.from(new Set(permissions.map((p) => p.module))).sort();

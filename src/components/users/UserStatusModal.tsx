@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,12 @@ export default function UserStatusModal({
 }: UserStatusModalProps) {
   const [status, setStatus] = useState<TUserStatus>(user?.status || "ACTIVE");
   const [updateStatus, { isLoading }] = useUpdateUserStatusMutation();
+
+  useEffect(() => {
+    if (open && user?.status) {
+      setStatus(user.status);
+    }
+  }, [open, user?.id, user?.status]);
 
   const handleSave = async () => {
     if (!user) return;

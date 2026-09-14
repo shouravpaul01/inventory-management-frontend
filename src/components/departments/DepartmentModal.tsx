@@ -54,21 +54,25 @@ export default function DepartmentModal({
     },
   });
 
+  const { reset } = methods;
+
   useEffect(() => {
+    if (!open) return;
+
     if (department) {
-      methods.reset({
+      reset({
         name: department.name,
         code: department.code,
         description: department.description || "",
       });
     } else {
-      methods.reset({
+      reset({
         name: "",
         code: "",
         description: "",
       });
     }
-  }, [department, open, methods]);
+  }, [department?.id, open, reset]);
 
   const onSubmit = async (data: TDepartmentFormInput) => {
     try {

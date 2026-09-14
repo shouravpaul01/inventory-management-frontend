@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -65,6 +65,24 @@ export default function StockTransferModal({
       notes: "",
     },
   });
+  const { reset } = methods;
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedPhoto(null);
+      setPhotoPreview(null);
+      return;
+    }
+    if (defaultBalance) {
+      reset({
+        inventoryItemId: defaultBalance.inventoryItemId,
+        fromLocationId: defaultBalance.locationId,
+        toLocationId: "",
+        quantity: 1,
+        notes: "",
+      });
+    }
+  }, [defaultBalance?.id, open, reset]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
