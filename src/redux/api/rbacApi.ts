@@ -8,7 +8,6 @@ export type TPermissionQueryParams = {
   limit?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  [key: string]: any;
 };
 
 export type TRoleQueryParams = {
@@ -17,7 +16,6 @@ export type TRoleQueryParams = {
   limit?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  [key: string]: any;
 };
 
 export const rbacApi = baseApi.injectEndpoints({
@@ -34,7 +32,10 @@ export const rbacApi = baseApi.injectEndpoints({
       providesTags: ["Permission"],
     }),
 
-    getRoles: builder.query<TApiResponse<TRole[]>, TRoleQueryParams | void>({
+    getRoles: builder.query<
+      TApiResponse<TRole[]>,
+      TRoleQueryParams | void
+    >({
       query: (params) => ({
         url: "/rbac/roles",
         method: "GET",

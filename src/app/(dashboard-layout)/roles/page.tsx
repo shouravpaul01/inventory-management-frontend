@@ -31,7 +31,7 @@ export default function RolesPage() {
     name: string;
   } | null>(null);
 
-  const { data, isLoading } = useGetRolesQuery();
+  const { data, isLoading } = useGetRolesQuery({ limit: 100 });
   const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
   const roles = data?.data || [];

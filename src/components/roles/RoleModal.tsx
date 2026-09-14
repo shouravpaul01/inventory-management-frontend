@@ -40,8 +40,9 @@ export default function RoleModal({
 }: RoleModalProps) {
   const isEdit = Boolean(role);
 
-  const { data: permsData } = useGetPermissionsQuery({ limit: 500 });
+  const { data: permsData } = useGetPermissionsQuery({ limit: 200 });
   const permissions = permsData?.data || [];
+
   const [selectedPermIds, setSelectedPermIds] = useState<string[]>([]);
 
   const [createRole, { isLoading: isCreating }] = useCreateRoleMutation();
