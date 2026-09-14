@@ -194,7 +194,7 @@ export default function RoleModal({
 
               {/* Permissions Matrix */}
               <div className="space-y-3 border-t border-border/60 pt-3">
-                <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 py-1.5 border-b border-border/40">
+                <div className="flex items-center justify-between py-1.5 border-b border-border/40">
                   <span className="text-xs font-semibold text-foreground">
                     Module Permissions ({selectedPermIds.length} selected)
                   </span>
@@ -263,7 +263,7 @@ export default function RoleModal({
             </div>
 
             {/* Fixed Footer */}
-            <DialogFooter className="px-6 py-3 border-t border-border/60 shrink-0 bg-muted/20">
+            <div className="shrink-0 border-t border-border/60 bg-muted/20 px-6 py-3.5 flex items-center justify-end gap-2.5">
               <Button
                 type="button"
                 variant="outline"
@@ -284,7 +284,7 @@ export default function RoleModal({
                   "Create Role"
                 )}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </FormProvider>
       </DialogContent>
