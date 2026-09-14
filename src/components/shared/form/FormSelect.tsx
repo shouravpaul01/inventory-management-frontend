@@ -29,12 +29,14 @@ interface FormSelectProps {
   required?: boolean;
 }
 
+const EMPTY_FORM_VALUE = "__EMPTY__";
+
 export function FormSelect({
   name,
   label,
   placeholder = "Select an option",
   description,
-  options,
+  options = [],
   disabled = false,
 }: FormSelectProps) {
   const {
@@ -45,6 +47,12 @@ export function FormSelect({
   // 🔥 FIX: nested + array safe error
   const error = get(errors, name)?.message as string | undefined;
 
+  // Radix UI invariant: <SelectItem /> cannot have value=""
+  const safeOptions = (options || []).map((opt) => ({
+    ...opt,
+    value: !opt.value || opt.value === "" ? EMPTY_FORM_VALUE : opt.value,
+  }));
+
   return (
     <Field>
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
@@ -53,36 +61,54 @@ export function FormSelect({
         <Controller
           name={name}
           control={control}
-          render={({ field }) => (
-            <Select
-              value={field.value || ""}
-              onValueChange={field.onChange}
-              disabled={disabled}
-            >
-              <SelectTrigger
-                id={name}
-                ref={field.ref}
-                className="bg-white h-12! w-full"
-              >
-                <SelectValue>
-                  {options.find((option) => option.value === field.value)
-                    ?.label || placeholder}
-                </SelectValue>
-              </SelectTrigger>
+          render={({ field }) => {
+            const hasEmptyOption = safeOptions.some(
+              (o) => o.value === EMPTY_FORM_VALUE
+            );
+            const selectValue =
+              !field.value || field.value === ""
+                ? hasEmptyOption
+                  ? EMPTY_FORM_VALUE
+                  : undefined
+                : field.value;
 
-              <SelectContent>
-                {options.map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    className="p-2"
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+            return (
+              <Select
+                value={selectValue}
+                onValueChange={(val) => {
+                  if (val === EMPTY_FORM_VALUE) {
+                    field.onChange("");
+                  } else {
+                    field.onChange(val);
+                  }
+                }}
+                disabled={disabled}
+              >
+                <SelectTrigger
+                  id={name}
+                  ref={field.ref}
+                  className="bg-white dark:bg-card h-12! w-full"
+                >
+                  <SelectValue>
+                    {safeOptions.find((option) => option.value === selectValue)
+                      ?.label || placeholder}
+                  </SelectValue>
+                </SelectTrigger>
+
+                <SelectContent>
+                  {safeOptions.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="p-2"
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          }}
         />
       </FieldContent>
 
