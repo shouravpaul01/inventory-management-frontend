@@ -92,16 +92,12 @@ export default function RoleModal({
   // Group permissions by module
   const modules = Array.from(new Set(permissions.map((p) => p.module))).sort();
 
-  const togglePerm = (id: string) => {
-    setSelectedPermIds((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
-    );
-  };
-
   const toggleModuleAll = (moduleName: string) => {
     const modulePermIds = permissions
       .filter((p) => p.module === moduleName)
       .map((p) => p.id);
+
+    if (modulePermIds.length === 0) return;
 
     const allSelected = modulePermIds.every((id) =>
       selectedPermIds.includes(id)
@@ -232,29 +228,32 @@ export default function RoleModal({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {modulePerms.map((perm) => (
-                        <div
+                        <label
                           key={perm.id}
-                          className="flex items-start space-x-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer"
-                          onClick={() => togglePerm(perm.id)}
+                          htmlFor={`perm-${perm.id}`}
+                          className="flex items-start space-x-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer select-none"
                         >
                           <Checkbox
                             id={`perm-${perm.id}`}
                             checked={selectedPermIds.includes(perm.id)}
-                            onCheckedChange={() => togglePerm(perm.id)}
+                            onCheckedChange={(checked) => {
+                              setSelectedPermIds((prev) =>
+                                checked
+                                  ? [...prev.filter((id) => id !== perm.id), perm.id]
+                                  : prev.filter((id) => id !== perm.id)
+                              );
+                            }}
                             className="mt-0.5"
                           />
                           <div className="flex flex-col text-left leading-tight">
-                            <label
-                              htmlFor={`perm-${perm.id}`}
-                              className="text-xs font-medium text-foreground cursor-pointer"
-                            >
+                            <span className="text-xs font-medium text-foreground">
                               {perm.name}
-                            </label>
+                            </span>
                             <span className="text-[10px] font-mono text-muted-foreground">
                               {perm.code}
                             </span>
                           </div>
-                        </div>
+                        </label>
                       ))}
                     </div>
                   </div>

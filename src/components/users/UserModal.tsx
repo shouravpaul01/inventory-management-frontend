@@ -115,14 +115,6 @@ export default function UserModal({
     }
   }, [open, user?.id, reset]);
 
-  const toggleRole = (roleId: string) => {
-    setSelectedRoleIds((prev) =>
-      prev.includes(roleId)
-        ? prev.filter((id) => id !== roleId)
-        : [...prev, roleId]
-    );
-  };
-
   const onSubmit = async (data: any) => {
     try {
       if (isEdit && user) {
@@ -253,23 +245,26 @@ export default function UserModal({
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto p-1 rounded-md border border-input/60 bg-muted/20">
                 {roles.map((role) => (
-                  <div
+                  <label
                     key={role.id}
-                    className="flex items-center space-x-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer"
-                    onClick={() => toggleRole(role.id)}
+                    htmlFor={`role-${role.id}`}
+                    className="flex items-center space-x-2 p-1.5 rounded hover:bg-muted/50 cursor-pointer select-none"
                   >
                     <Checkbox
                       id={`role-${role.id}`}
                       checked={selectedRoleIds.includes(role.id)}
-                      onCheckedChange={() => toggleRole(role.id)}
+                      onCheckedChange={(checked) => {
+                        setSelectedRoleIds((prev) =>
+                          checked
+                            ? [...prev.filter((id) => id !== role.id), role.id]
+                            : prev.filter((id) => id !== role.id)
+                        );
+                      }}
                     />
-                    <Label
-                      htmlFor={`role-${role.id}`}
-                      className="text-xs font-medium cursor-pointer"
-                    >
+                    <span className="text-xs font-medium cursor-pointer">
                       {role.name}
-                    </Label>
-                  </div>
+                    </span>
+                  </label>
                 ))}
               </div>
             </div>
