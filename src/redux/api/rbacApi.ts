@@ -1,20 +1,44 @@
 import { baseApi } from "@/redux/api/baseApi";
 import { TApiResponse, TPermission, TRole } from "@/type";
 
+export type TPermissionQueryParams = {
+  searchTerm?: string;
+  module?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  [key: string]: any;
+};
+
+export type TRoleQueryParams = {
+  searchTerm?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  [key: string]: any;
+};
+
 export const rbacApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getPermissions: builder.query<TApiResponse<TPermission[]>, void>({
-      query: () => ({
+    getPermissions: builder.query<
+      TApiResponse<TPermission[]>,
+      TPermissionQueryParams | void
+    >({
+      query: (params) => ({
         url: "/rbac/permissions",
         method: "GET",
+        params: params || {},
       }),
       providesTags: ["Permission"],
     }),
 
-    getRoles: builder.query<TApiResponse<TRole[]>, void>({
-      query: () => ({
+    getRoles: builder.query<TApiResponse<TRole[]>, TRoleQueryParams | void>({
+      query: (params) => ({
         url: "/rbac/roles",
         method: "GET",
+        params: params || {},
       }),
       providesTags: ["Role"],
     }),

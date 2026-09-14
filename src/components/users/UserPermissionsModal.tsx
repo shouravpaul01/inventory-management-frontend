@@ -28,7 +28,7 @@ export default function UserPermissionsModal({
   onOpenChange,
   user,
 }: UserPermissionsModalProps) {
-  const { data: permsData } = useGetPermissionsQuery();
+  const { data: permsData } = useGetPermissionsQuery({ limit: 500 });
   const [overrideUserPermissions, { isLoading }] =
     useOverrideUserPermissionsMutation();
 
