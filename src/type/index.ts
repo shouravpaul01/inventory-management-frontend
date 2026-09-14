@@ -420,11 +420,14 @@ export type TApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
 
 export type TApprovalRecord = {
   id: string;
+  approvalRequestId?: string;
   stepNumber?: number;
-  level?: number;
-  approverId?: string;
+  level: number;
+  approverRoleId?: string | null;
+  approverId?: string | null;
   approver?: TUser;
   status: TApprovalStatus;
+  decision?: "APPROVE" | "REJECT" | "REQUEST_CHANGE" | null;
   comments?: string | null;
   decisionAt?: string | null;
   actedAt?: string | null;
@@ -433,10 +436,18 @@ export type TApprovalRecord = {
 
 export type TApprovalRequest = {
   id: string;
+  requestNumber?: string;
   entityType: string;
   entityId: string;
+  permissionCode?: string;
   status: TApprovalStatus;
   currentStep?: number;
+  currentLevel?: number;
+  totalLevels?: number;
+  reason?: string | null;
+  metadata?: any;
+  requestedById?: string;
+  requestedBy?: TUser;
   records: TApprovalRecord[];
   createdAt: string;
   updatedAt: string;
