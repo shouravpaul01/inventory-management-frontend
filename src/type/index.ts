@@ -302,46 +302,70 @@ export type TInventoryUnit = {
 
 export type TStockBalance = {
   id: string;
-  itemId: string;
+  inventoryItemId: string;
+  itemId?: string;
+  inventoryItem?: TInventoryItem;
   item?: TInventoryItem;
   locationId: string;
-  location?: TLocation;
+  location?: TStockLocation;
   quantity: number;
   reservedQuantity: number;
   availableQuantity: number;
-  minReorderLevel: number;
+  minReorderLevel?: number;
   maxReorderLevel?: number | null;
   lastRestockedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
-export type TStockTransactionType =
-  | "PURCHASE_RECEIPT"
-  | "DISTRIBUTION"
-  | "RETURN_RESTOCK"
+export type TStockMovementType =
+  | "PURCHASE"
+  | "INITIAL_STOCK"
+  | "STOCK_IN"
+  | "STOCK_OUT"
   | "TRANSFER"
+  | "DISTRIBUTION"
+  | "RETURN"
+  | "RESERVATION"
+  | "RESERVATION_RELEASE"
   | "ADJUSTMENT"
-  | "DISPOSAL";
+  | "DAMAGE"
+  | "LOSS"
+  | "DISPOSAL"
+  | "GIFT";
 
-export type TStockLedger = {
+export type TStockMovementPhoto = {
   id: string;
-  transactionType: TStockTransactionType;
+  imageUrl: string;
+  imagePublicId?: string;
+  caption?: string | null;
+};
+
+export type TStockMovement = {
+  id: string;
+  movementNumber: string;
+  type: TStockMovementType;
   quantity: number;
-  balanceAfter: number;
+  inventoryItemId: string;
+  inventoryItem?: TInventoryItem;
+  inventoryUnitId?: string | null;
+  inventoryUnit?: TInventoryUnit | null;
+  fromLocationId?: string | null;
+  fromLocation?: TStockLocation | null;
+  toLocationId?: string | null;
+  toLocation?: TStockLocation | null;
+  performedById?: string;
+  performedBy?: TUser | null;
   referenceType?: string | null;
   referenceId?: string | null;
   notes?: string | null;
-  itemId: string;
-  item?: TInventoryItem;
-  fromLocationId?: string | null;
-  fromLocation?: TLocation | null;
-  toLocationId?: string | null;
-  toLocation?: TLocation | null;
-  createdById: string;
-  createdBy?: TUser;
+  photos?: TStockMovementPhoto[];
   createdAt: string;
+  updatedAt?: string;
 };
+
+export type TStockTransactionType = TStockMovementType;
+export type TStockLedger = TStockMovement;
 
 // ==================== WORKFLOW TYPES ====================
 export type TIssueMode =
