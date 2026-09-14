@@ -2,25 +2,23 @@
 
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Mail, Loader2, KeyRound } from "lucide-react";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-
 import SectionHeader from "@/components/shared/SectionHeader";
-
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useForgotPasswordMutation } from "@/redux/api/authApi";
 import { toast } from "sonner";
 import { FormInput } from "@/components/shared/form/FormInput";
-import Image from "next/image";
 
 const schema = z.object({
-  email: z.string().email("Enter a valid email"),
+  email: z.string().min(1, "Email is required").email("Enter a valid email"),
 });
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
   const methods = useForm({
     resolver: zodResolver(schema),
@@ -29,78 +27,71 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: { email: string }) => {
     try {
-      toast.success(
-        "OTP has been sent to your email. Please check your inbox.",
-      );
-
-      router.push(
-        `/verification?forgot-password=success&email=${encodeURIComponent(data.email)}`,
-      );
+      await forgotPassword({ email: data.email.trim() }).unwrap();
+      toast.success("Security OTP sent to your institutional email.");
+      router.push(`/verification?email=${encodeURIComponent(data.email.trim())}`);
     } catch (error: any) {
-      console.log("error", error);
       toast.error(
-        error?.data?.error?.email[0] || "Failed to send OTP. Please try again.",
+        error?.data?.message || "Failed to process password recovery. Verify the email."
       );
     }
   };
 
   return (
-    <div
-      className="grid min-h-svh lg:grid-cols-2 
-  "
-    >
-      <div className="relative hidden lg:block">
-        <Image
-          src="/images/forgot-password.png"
-          alt="Beauty & Bliss"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
-      <div className="flex flex-col p-6 md:p-10 items-center justify-center w-full">
-        {" "}
-        {/* w-full যোগ করুন */}
-        <div className="w-full max-w-md space-y-8">
-          <SectionHeader
-            title="Forgot Password"
-            description="Enter your registered email address. we’ll send you a code to reset your password."
-          />
-          {/* w-full যোগ করুন */}
-          <FormProvider {...methods}>
-            <form
-              onSubmit={methods.handleSubmit(onSubmit)}
-              className="space-y-5"
-            >
-              <div>
-                <FormInput
-                  name="email"
-                  label="Email"
-                  type="email"
-                  placeholder="you@example.com"
-                  startIcon={{ icon: Mail }}
-                />
-                <p className="text-sm text-muted-foreground pt-2">
-                  Remember the password ?{" "}
-                  <Link
-                    href="/login"
-                    className="text-primary font-semibold hover:underline"
-                  >
-                    Sign in
-                  </Link>
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                Send OTP
-                <ArrowRight size={16} />
-              </Button>
-            </form>
-          </FormProvider>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md space-y-6 rounded-2xl border border-border/60 bg-card p-6 md:p-8 shadow-sm">
+        <div className="flex justify-center">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <KeyRound className="size-6" />
+          </div>
         </div>
+
+        <SectionHeader
+          align="center"
+          title="Reset Password"
+          description="Enter your registered institutional email to receive a verification OTP."
+        />
+
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-5">
+            <FormInput
+              name="email"
+              label="Institutional Email"
+              type="email"
+              placeholder="faculty@uni.edu"
+              startIcon={{ icon: Mail }}
+              disabled={isLoading}
+            />
+
+            <Button
+              type="submit"
+              className="w-full h-11 flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  Sending Code...
+                </>
+              ) : (
+                <>
+                  Send Recovery Code
+                  <ArrowRight className="size-4" />
+                </>
+              )}
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground pt-1">
+              Remember your password?{" "}
+              <Link
+                href="/login"
+                className="text-primary font-semibold hover:underline"
+              >
+                Return to sign in
+              </Link>
+            </p>
+          </form>
+        </FormProvider>
       </div>
     </div>
   );

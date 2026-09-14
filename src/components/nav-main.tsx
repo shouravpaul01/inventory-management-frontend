@@ -19,41 +19,87 @@ import {
 } from "@/components/ui/sidebar";
 import { ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePermission } from "@/hooks/usePermission";
 
-type NavItem = {
+export type NavItem = {
   title: string;
   url: string;
   icon?: React.ReactNode;
+  permission?: string;
+  permissions?: string[];
   items?: {
     title: string;
     url: string;
+    permission?: string;
   }[];
 };
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export function NavMain({
+  items,
+  groupLabel,
+}: {
+  items: NavItem[];
+  groupLabel?: string;
+}) {
   const pathname = usePathname();
+  const { can, canAny } = usePermission();
 
   const activeClass =
-    "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground";
+    "bg-primary text-primary-foreground font-medium hover:bg-primary hover:text-primary-foreground";
+
+  // Filter items based on user permissions
+  const filteredItems = items
+    .map((item) => {
+      // Direct permission check for parent
+      if (item.permission && !can(item.permission)) {
+        return null;
+      }
+      if (item.permissions && !canAny(item.permissions)) {
+        return null;
+      }
+
+      // Check children permissions
+      if (item.items && item.items.length > 0) {
+        const visibleSubItems = item.items.filter(
+          (sub) => !sub.permission || can(sub.permission)
+        );
+
+        if (visibleSubItems.length === 0 && item.url === "#") {
+          return null;
+        }
+
+        return {
+          ...item,
+          items: visibleSubItems,
+        };
+      }
+
+      return item;
+    })
+    .filter(Boolean) as NavItem[];
+
+  if (filteredItems.length === 0) {
+    return null;
+  }
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      {groupLabel && <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>}
 
       <SidebarMenu>
-        {items.map((item) => {
+        {filteredItems.map((item) => {
           const hasChildren = !!item.items?.length;
 
           const isParentActive =
             pathname === item.url ||
-            pathname.startsWith(`${item.url}/`) ||
+            (item.url !== "#" && pathname.startsWith(`${item.url}/`)) ||
             item.items?.some(
               (subItem) =>
                 pathname === subItem.url ||
                 pathname.startsWith(`${subItem.url}/`)
             );
 
-          // Menu without children
+          // Menu item without children
           if (!hasChildren) {
             return (
               <SidebarMenuItem key={item.title}>
@@ -72,7 +118,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
             );
           }
 
-          // Menu with children
+          // Collapsible menu item with children
           return (
             <Collapsible
               key={item.title}
@@ -84,12 +130,12 @@ export function NavMain({ items }: { items: NavItem[] }) {
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={isParentActive}
-                    className={cn(isParentActive && activeClass)}
+                    className={cn(isParentActive && !item.items?.some(sub => pathname === sub.url) && "bg-muted/70 font-medium")}
                   >
                     {item.icon}
                     <span>{item.title}</span>
 
-                    <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    <ChevronRightIcon className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 text-muted-foreground" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
 

@@ -5,10 +5,10 @@ import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { toast } from "sonner";
+import { KeyRound, Loader2 } from "lucide-react";
 
 import SectionHeader from "@/components/shared/SectionHeader";
 import { Button } from "@/components/ui/button";
-
 import {
   InputOTP,
   InputOTPGroup,
@@ -17,18 +17,17 @@ import {
 
 import { otpSchema } from "@/validation/auth.validation";
 import {
-  useVerifyOtpMutation,
-  useResendOtpMutation,
+  useVerifyResetOtpMutation,
+  useForgotPasswordMutation,
 } from "@/redux/api/authApi";
-import Image from "next/image";
-import { Heading } from "@/components/shared/typography";
 
 export default function VerifyOtpPage() {
   const params = useSearchParams();
   const router = useRouter();
 
   const email = params.get("email");
-  const forgotPassword = params.get("forgot-password");
+  const [verifyOtp, { isLoading }] = useVerifyResetOtpMutation();
+  const [resendOtp, { isLoading: isResending }] = useForgotPasswordMutation();
 
   const methods = useForm({
     resolver: zodResolver(otpSchema),
@@ -43,137 +42,127 @@ export default function VerifyOtpPage() {
     formState: { errors },
   } = methods;
 
-  // Submit
   const onSubmit = async (data: { otp: string }) => {
     try {
       if (!email) {
-        toast.error("Email not found ❌");
+        toast.error("Email address missing. Please request a new code.");
         return;
       }
 
-      toast.success(
-        forgotPassword === "success"
-          ? "OTP verified! Reset your password."
-          : "OTP verified! Please log in.",
-      );
+      const res = await verifyOtp({
+        email: email.trim(),
+        otp: data.otp.trim(),
+      }).unwrap();
 
-      //  redirect with email
-      // forgotPassword === "success"
-      //   ? router.push(`/reset-password?token=${res?.data?.reset_token}`)
-      //   : router.push(`/login`);
+      toast.success("Security code verified! You can now reset your password.");
+      router.push(`/reset-password?token=${res.data.resetToken}`);
     } catch (error: any) {
-      console.log(error);
-
-      const err = error?.data;
-
-      // Priority based message extract
       const message =
-        err?.errors?.non_field_errors?.[0] ||
-        err?.errors?.email?.[0] ||
-        err?.message ||
-        "OTP verification failed ❌";
-
+        error?.data?.message || "Verification code is invalid or has expired.";
       toast.error(message);
     }
   };
 
-  // Resend OTP
   const handleResend = async () => {
     try {
       if (!email) return;
-
-      toast.success("OTP sent again 📩");
+      await resendOtp({ email: email.trim() }).unwrap();
+      toast.success("New 6-digit code has been dispatched to your email.");
     } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to resend OTP ❌");
+      toast.error(error?.data?.message || "Failed to resend code.");
     }
   };
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="relative hidden lg:block">
-        <Image
-          src="/images/verification.png"
-          alt="verification"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
-      <div className="flex flex-col p-6 md:p-10 items-center justify-center w-full">
-        {" "}
-        {/* w-full যোগ করুন */}
-        <div className="w-full max-w-md space-y-12">
-          
-          <SectionHeader
-          
-            title="Enter OTP"
-            description="We have share a code of your registered email address
-kristin.watson@example.com"
-          />
-          <FormProvider {...methods}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {/* OTP */}
-              <div className="flex items-center ">
-                <Controller
-                  name="otp"
-                  control={control}
-                  render={({ field }) => (
-                    <InputOTP
-                      maxLength={6}
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      <InputOTPGroup className="w-full gap-4">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <InputOTPSlot
-                            key={i}
-                            index={i}
-                            className="bg-white size-12 border"
-                          />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                  )}
-                />
-              </div>
-
-              {/* Error */}
-              {errors.otp && (
-                <p className="text-sm text-red-500 text-center">
-                  {errors.otp.message as string}
-                </p>
-              )}
-
-              {/* Resend */}
-              <div className="text-left">
-                <Button
-                variant={"link"}
-                  type="button"
-                  onClick={handleResend}
-             
-                >
-                  Resend OTP
-                </Button>
-              </div>
-
-              {/* Submit */}
-              <Button type="submit" className="w-full h-12">
-                Verify OTP
-              </Button>
-
-              {/* Back */}
-              <p className="text-center text-sm text-muted-foreground pt-2">
-                Wrong email?{" "}
-                <Link
-                  href="/forgot-password"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  Change email
-                </Link>
-              </p>
-            </form>
-          </FormProvider>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="w-full max-w-md space-y-6 rounded-2xl border border-border/60 bg-card p-6 md:p-8 shadow-sm">
+        <div className="flex justify-center">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <KeyRound className="size-6" />
+          </div>
         </div>
+
+        <SectionHeader
+          align="center"
+          title="Security Verification"
+          description={
+            email
+              ? `Enter the 6-digit verification code sent to ${email}`
+              : "Enter the 6-digit code sent to your institutional email"
+          }
+        />
+
+        <FormProvider {...methods}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex justify-center">
+              <Controller
+                name="otp"
+                control={control}
+                render={({ field }) => (
+                  <InputOTP
+                    maxLength={6}
+                    value={field.value}
+                    onChange={field.onChange}
+                  >
+                    <InputOTPGroup className="gap-2 sm:gap-3">
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <InputOTPSlot
+                          key={i}
+                          index={i}
+                          className="size-11 sm:size-12 text-base font-semibold border-border"
+                        />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                )}
+              />
+            </div>
+
+            {errors.otp && (
+              <p className="text-xs text-destructive text-center font-medium">
+                {errors.otp.message as string}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Didn't receive the code?</span>
+              <Button
+                variant="link"
+                type="button"
+                className="h-auto p-0 text-xs text-primary"
+                onClick={handleResend}
+                disabled={isResending}
+              >
+                {isResending ? "Sending..." : "Resend Code"}
+              </Button>
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                  Verifying...
+                </>
+              ) : (
+                "Verify & Continue"
+              )}
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Wrong email address?{" "}
+              <Link
+                href="/forgot-password"
+                className="text-primary font-medium hover:underline"
+              >
+                Change email
+              </Link>
+            </p>
+          </form>
+        </FormProvider>
       </div>
     </div>
   );
