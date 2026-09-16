@@ -48,6 +48,8 @@ export default function RequisitionsPage() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedRequisition, setSelectedRequisition] =
     useState<TRequisition | null>(null);
+  const [requisitionToEdit, setRequisitionToEdit] =
+    useState<TRequisition | null>(null);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [requisitionToDelete, setRequisitionToDelete] =
@@ -86,10 +88,19 @@ export default function RequisitionsPage() {
     setDetailsModalOpen(true);
   };
 
+  const handleEditRequisition = (req: TRequisition) => {
+    setRequisitionToEdit(req);
+    setCreateModalOpen(true);
+  };
+
   const handleSubmitDraft = async (req: TRequisition) => {
     try {
       await submitRequisition(req.id).unwrap();
-      toast.success(`Requisition "${req.requestNumber || req.requisitionNo}" submitted for approval.`);
+      toast.success(
+        req.status === "REJECTED"
+          ? `Requisition "${req.requestNumber || req.requisitionNo}" revised and resubmitted for Super Admin approval.`
+          : `Requisition "${req.requestNumber || req.requisitionNo}" submitted for approval.`
+      );
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to submit requisition");
     }
@@ -229,6 +240,7 @@ export default function RequisitionsPage() {
         requisitions={requisitions}
         isLoading={isLoading}
         onViewDetails={handleViewDetails}
+        onEdit={handleEditRequisition}
         onSubmitDraft={handleSubmitDraft}
         onCancel={handleOpenDelete}
         onDelete={handleOpenDelete}
@@ -249,10 +261,14 @@ export default function RequisitionsPage() {
         />
       )}
 
-      {/* Create Requisition Modal */}
+      {/* Create / Edit Requisition Modal */}
       <RequisitionModal
         open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
+        onOpenChange={(isOpen) => {
+          setCreateModalOpen(isOpen);
+          if (!isOpen) setRequisitionToEdit(null);
+        }}
+        requisitionToEdit={requisitionToEdit}
       />
 
       {/* Requisition Details Modal */}
@@ -260,6 +276,7 @@ export default function RequisitionsPage() {
         open={detailsModalOpen}
         onOpenChange={setDetailsModalOpen}
         requisition={selectedRequisition}
+        onEdit={handleEditRequisition}
       />
 
       {/* Delete / Cancel Confirmation */}

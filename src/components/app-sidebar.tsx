@@ -28,6 +28,7 @@ import {
   BarChart3,
   LogOut,
   User,
+  SlidersHorizontal,
 } from "lucide-react";
 import Logo from "./shared/Logo";
 import { Button } from "./ui/button";
@@ -86,7 +87,13 @@ const workflowNav: NavItem[] = [
     title: "Approvals",
     url: "/approvals",
     icon: <CheckSquare className="size-4" />,
-    permissions: ["requisition.approve", "approval.view"],
+    permissions: [
+      "requisition.approve",
+      "approval.view",
+      "approval.manage_policy",
+      "requisition.view",
+      "requisition.create",
+    ],
   },
   {
     title: "Distributions",
@@ -137,16 +144,22 @@ const administrationNav: NavItem[] = [
     permission: "role.view",
   },
   {
+    title: "Approval Policies & Exemptions",
+    url: "/approvals?tab=policies",
+    icon: <SlidersHorizontal className="size-4" />,
+    permissions: ["approval.manage_policy", "SUPER_ADMIN"],
+  },
+  {
     title: "Audit Trail",
     url: "/audit-logs",
     icon: <ScrollText className="size-4" />,
     permission: "audit.view",
   },
   {
-    title: "Reports & Analytics",
+    title: "Reports & Assets",
     url: "/reports",
     icon: <BarChart3 className="size-4" />,
-    permission: "report.view",
+    permissions: ["report.view", "inventory.view"],
   },
 ];
 

@@ -22,6 +22,7 @@ import { stockTransferSchema, TStockTransferInput } from "@/validation/stock.val
 import { toast } from "sonner";
 import { Loader2, ArrowRightLeft, Upload } from "lucide-react";
 import { TStockBalance } from "@/type";
+import { handleMutationResult } from "@/lib/notifyMutation";
 
 interface StockTransferModalProps {
   open: boolean;
@@ -114,8 +115,8 @@ export default function StockTransferModal({
         formData.append("photo", selectedPhoto);
       }
 
-      await transferStock(formData).unwrap();
-      toast.success("Stock transferred successfully between locations.");
+      const res = await transferStock(formData).unwrap();
+      handleMutationResult(res, "Stock transferred successfully between locations.");
       methods.reset();
       setSelectedPhoto(null);
       setPhotoPreview(null);

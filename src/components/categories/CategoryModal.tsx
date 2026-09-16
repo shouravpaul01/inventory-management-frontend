@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { TCategory } from "@/type";
+import { handleMutationResult } from "@/lib/notifyMutation";
 
 interface CategoryModalProps {
   open: boolean;
@@ -90,7 +91,7 @@ export default function CategoryModal({
   const onSubmit = async (data: TCategoryFormInput) => {
     try {
       if (isEdit && category) {
-        await updateCategory({
+        const res = await updateCategory({
           id: category.id,
           body: {
             name: data.name.trim(),
@@ -98,15 +99,15 @@ export default function CategoryModal({
             parentId: data.parentId || null,
           },
         }).unwrap();
-        toast.success("Category updated successfully 🎉");
+        handleMutationResult(res, "Category updated successfully 🎉");
       } else {
-        await createCategory({
+        const res = await createCategory({
           name: data.name.trim(),
           code: data.code.trim().toUpperCase(),
           description: data.description?.trim(),
           parentId: data.parentId || null,
         }).unwrap();
-        toast.success("Category created successfully 🎉");
+        handleMutationResult(res, "Category created successfully 🎉");
       }
       onOpenChange(false);
       methods.reset();

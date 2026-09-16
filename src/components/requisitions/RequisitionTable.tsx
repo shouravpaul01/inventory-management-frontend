@@ -25,6 +25,7 @@ import {
   Calendar,
   Building2,
   User as UserIcon,
+  Pencil,
 } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -33,6 +34,7 @@ interface RequisitionTableProps {
   requisitions: TRequisition[];
   isLoading: boolean;
   onViewDetails: (requisition: TRequisition) => void;
+  onEdit?: (requisition: TRequisition) => void;
   onSubmitDraft?: (requisition: TRequisition) => void;
   onCancel?: (requisition: TRequisition) => void;
   onDelete?: (requisition: TRequisition) => void;
@@ -42,6 +44,7 @@ export default function RequisitionTable({
   requisitions,
   isLoading,
   onViewDetails,
+  onEdit,
   onSubmitDraft,
   onCancel,
   onDelete,
@@ -153,8 +156,17 @@ export default function RequisitionTable({
                   ? `${req.requester.firstName} ${req.requester.lastName}`
                   : "Requester";
                 const isOwner = user?.id === req.requesterId;
-                const canSubmit = isOwner && req.status === "DRAFT" && can("requisition.submit");
-                const canCancel = (isOwner || can("requisition.cancel")) && req.status === "DRAFT";
+                const canEdit =
+                  isOwner &&
+                  (req.status === "DRAFT" || req.status === "REJECTED") &&
+                  can("requisition.create");
+                const canSubmit =
+                  isOwner &&
+                  (req.status === "DRAFT" || req.status === "REJECTED") &&
+                  can("requisition.submit");
+                const canCancel =
+                  (isOwner || can("requisition.cancel")) &&
+                  (req.status === "DRAFT" || req.status === "REJECTED");
                 const lineCount = req.lines?.length || req.items?.length || 0;
 
                 return (
@@ -233,11 +245,31 @@ export default function RequisitionTable({
                           <Eye className="size-3.5" />
                         </Button>
 
+                        {canEdit && onEdit && (
+                          <Button
+                            variant="ghost"
+                            size="icon-xs"
+                            title={
+                              req.status === "REJECTED"
+                                ? "Revise Rejected Requisition"
+                                : "Edit Draft Requisition"
+                            }
+                            onClick={() => onEdit(req)}
+                            className="text-amber-600 hover:bg-amber-500/10"
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        )}
+
                         {canSubmit && onSubmitDraft && (
                           <Button
                             variant="ghost"
                             size="icon-xs"
-                            title="Submit for Approval"
+                            title={
+                              req.status === "REJECTED"
+                                ? "Resubmit to Super Admin"
+                                : "Submit for Approval"
+                            }
                             onClick={() => onSubmitDraft(req)}
                             className="text-primary hover:bg-primary/10"
                           >

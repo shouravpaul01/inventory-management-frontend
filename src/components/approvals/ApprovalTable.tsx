@@ -21,6 +21,9 @@ import {
   FileCheck,
   User,
   ArrowRight,
+  AlertTriangle,
+  RotateCcw,
+  Pencil,
 } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
 
@@ -59,6 +62,13 @@ export default function ApprovalTable({
           <Badge variant="destructive" className="text-[10px] gap-1">
             <XCircle className="size-2.5" />
             Rejected
+          </Badge>
+        );
+      case "RETURN_FOR_CORRECTION":
+        return (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] gap-1">
+            <AlertTriangle className="size-2.5" />
+            Needs Correction
           </Badge>
         );
       case "CANCELLED":
@@ -101,7 +111,7 @@ export default function ApprovalTable({
               requests.map((req) => {
                 const requester = req.requestedBy;
                 const requesterName = requester
-                  ? `${requester.firstName} ${requester.lastName}`
+                  ? `${requester.firstName} ${requester.lastName || ""}`.trim()
                   : "Requester";
                 const totalLevels = req.totalLevels || req.records?.length || 1;
                 const currentLvl = req.currentLevel || 1;
@@ -150,6 +160,16 @@ export default function ApprovalTable({
                       <p className="text-xs text-muted-foreground truncate max-w-xs" title={req.reason || ""}>
                         {req.reason || "Standard institutional workflow approval"}
                       </p>
+                      {req.metadata?.rejectionFeedback && (
+                        <p className="text-[10px] text-rose-600 dark:text-rose-400 font-medium truncate max-w-xs mt-0.5" title={req.metadata.rejectionFeedback}>
+                          Reason: {req.metadata.rejectionFeedback}
+                        </p>
+                      )}
+                      {req.metadata?.correctionFeedback && (
+                        <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate max-w-xs mt-0.5" title={req.metadata.correctionFeedback}>
+                          Notes: {req.metadata.correctionFeedback}
+                        </p>
+                      )}
                     </TableCell>
 
                     <TableCell className="py-3 text-center">
@@ -167,15 +187,46 @@ export default function ApprovalTable({
                     </TableCell>
 
                     <TableCell className="py-3 text-right">
-                      <Button
-                        size="sm"
-                        variant={req.status === "PENDING" ? "default" : "outline"}
-                        onClick={() => onReview(req)}
-                        className="text-xs gap-1 h-7 shadow-xs"
-                      >
-                        <FileCheck className="size-3.5" />
-                        {req.status === "PENDING" ? "Review" : "View Details"}
-                      </Button>
+                      {req.status === "RETURN_FOR_CORRECTION" ? (
+                        <Button
+                          size="sm"
+                          onClick={() => onReview(req)}
+                          className="text-xs gap-1 h-7 shadow-xs bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                        >
+                          <RotateCcw className="size-3.5" />
+                          Fix & Resubmit
+                        </Button>
+                      ) : req.status === "REJECTED" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onReview(req)}
+                          className="text-xs gap-1 h-7 shadow-xs text-rose-600 border-rose-200 hover:bg-rose-50 cursor-pointer"
+                        >
+                          <RotateCcw className="size-3.5" />
+                          Feedback / Edit
+                        </Button>
+                      ) : req.status === "PENDING" ? (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => onReview(req)}
+                          className="text-xs gap-1 h-7 shadow-xs bg-primary cursor-pointer"
+                        >
+                          <FileCheck className="size-3.5" />
+                          Review / Edit
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => onReview(req)}
+                          className="text-xs gap-1 h-7 shadow-xs cursor-pointer"
+                        >
+                          <FileCheck className="size-3.5" />
+                          View Details
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 );

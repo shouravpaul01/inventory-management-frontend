@@ -13,6 +13,7 @@ import {
   Building2,
   ArrowRight,
   AlertTriangle,
+  AlertCircle,
   CheckCircle2,
   Clock,
   QrCode,
@@ -26,7 +27,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useGetDashboardOverviewQuery,
   useGetLowStockReportQuery,
+  useGetMyAssignedAssetsQuery,
 } from "@/redux/api/reportApi";
+import { useGetRequisitionsQuery } from "@/redux/api/requisitionApi";
 import { useGetStockMovementsQuery } from "@/redux/api/stockApi";
 
 export default function DashboardPage() {
@@ -50,6 +53,24 @@ export default function DashboardPage() {
     { skip: !can("inventory.view") }
   );
   const recentMovements = recentMovementsData?.data || [];
+
+  const { data: myAssetsData } = useGetMyAssignedAssetsQuery(undefined, {
+    skip: canViewReports,
+  });
+  const myAssets = myAssetsData?.data || [];
+
+  const { data: myReqsData } = useGetRequisitionsQuery(
+    { requesterId: user?.id, limit: 100 },
+    { skip: canViewReports || !user?.id }
+  );
+  const myReqs = myReqsData?.data || [];
+  const myPendingReqs = myReqs.filter(
+    (r) => r.status === "SUBMITTED" || r.status === "UNDER_REVIEW"
+  ).length;
+  const myApprovedReqs = myReqs.filter(
+    (r) => r.status === "APPROVED" || r.status === "PARTIALLY_APPROVED"
+  ).length;
+  const myRejectedReqs = myReqs.filter((r) => r.status === "REJECTED").length;
 
   const quickActions = [
     {
@@ -221,6 +242,91 @@ export default function DashboardPage() {
               </p>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* Staff Personal Workflow & Asset Governance Metrics */}
+      {!canViewReports && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="p-4 shadow-xs flex items-center gap-4">
+            <div className="size-11 rounded-xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 shrink-0">
+              <FileText className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">My Requisitions</p>
+              <p className="text-2xl font-bold text-foreground">
+                {myReqs.length}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Total material requests submitted
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-4 shadow-xs flex items-center gap-4">
+            <div className="size-11 rounded-xl bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-600 shrink-0">
+              <Clock className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Awaiting Approval</p>
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+                {myPendingReqs}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Under department & admin review
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-4 shadow-xs flex items-center gap-4">
+            <div className="size-11 rounded-xl bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 shrink-0">
+              <CheckCircle2 className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">Approved Requisitions</p>
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {myApprovedReqs}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Approved ready for store pickup
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-4 shadow-xs flex items-center gap-4">
+            <div className="size-11 rounded-xl bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-indigo-600 shrink-0">
+              <QrCode className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted-foreground">My Assigned Assets</p>
+              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                {myAssets.length}
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Physical units checked out to you
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Staff Requisition Action Notice (If any need revision) */}
+      {!canViewReports && myRejectedReqs > 0 && (
+        <div className="rounded-xl border border-rose-300/80 bg-rose-50/80 dark:bg-rose-950/30 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-rose-800 dark:text-rose-300">
+            <AlertCircle className="size-5 shrink-0 text-rose-600" />
+            <div>
+              <p className="font-bold text-sm">
+                Action Required: {myRejectedReqs} Requisitions Returned / Rejected
+              </p>
+              <p className="text-rose-700 dark:text-rose-400 text-xs">
+                Review the reviewer comments, adjust your quantities or item specs, and resubmit for approval.
+              </p>
+            </div>
+          </div>
+          <Button asChild size="sm" variant="destructive" className="text-xs shrink-0 shadow-xs">
+            <Link href="/requisitions">Review & Resubmit &rarr;</Link>
+          </Button>
         </div>
       )}
 

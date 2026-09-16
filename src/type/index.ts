@@ -416,7 +416,12 @@ export type TRequisitionLine = {
 
 export type TRequisitionItem = TRequisitionLine;
 
-export type TApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type TApprovalStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "RETURN_FOR_CORRECTION"
+  | "CANCELLED";
 
 export type TApprovalRecord = {
   id: string;
@@ -451,6 +456,49 @@ export type TApprovalRequest = {
   records: TApprovalRecord[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type TApprovalPolicy = {
+  id: string;
+  permissionId: string;
+  permission: TPermission;
+  requirement: "REQUIRED" | "NOT_REQUIRED";
+  scope: "SYSTEM" | "ROLE" | "USER";
+  roleId?: string | null;
+  role?: TRole | null;
+  userId?: string | null;
+  user?: TUser | null;
+  condition?: any;
+  approvalLevelCount: number;
+  allowSelfApproval: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TExemptionSummary = {
+  systemDefaultRule: string;
+  superAdminStatus: string;
+  exemptedUsersCount: number;
+  exemptedRolesCount: number;
+  exemptedActionsCount: number;
+  exemptedUsers: Array<{
+    policyId: string;
+    permissionCode: string;
+    permissionName: string;
+    user: TUser | null;
+  }>;
+  exemptedRoles: Array<{
+    policyId: string;
+    permissionCode: string;
+    permissionName: string;
+    role: TRole | null;
+  }>;
+  exemptedActions: Array<{
+    policyId: string;
+    permissionCode: string;
+    permissionName: string;
+  }>;
 };
 
 export type TRequisition = {

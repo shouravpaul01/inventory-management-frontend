@@ -26,6 +26,7 @@ import { itemFormSchema, TItemFormInput } from "@/validation/item.validation";
 import { toast } from "sonner";
 import { Loader2, Package } from "lucide-react";
 import { TInventoryItem } from "@/type";
+import { handleMutationResult } from "@/lib/notifyMutation";
 
 interface ItemModalProps {
   open: boolean;
@@ -135,7 +136,7 @@ export default function ItemModal({
   const onSubmit = async (data: TItemFormInput) => {
     try {
       if (isEdit && item) {
-        await updateItem({
+        const res = await updateItem({
           id: item.id,
           body: {
             name: data.name.trim(),
@@ -153,9 +154,9 @@ export default function ItemModal({
           },
         }).unwrap();
 
-        toast.success("Inventory item updated successfully 🎉");
+        handleMutationResult(res, "Inventory item updated successfully 🎉");
       } else {
-        await createItem({
+        const res = await createItem({
           name: data.name.trim(),
           code: data.code?.trim() || undefined,
           sku: data.sku?.trim() || undefined,
@@ -171,7 +172,7 @@ export default function ItemModal({
           description: data.description?.trim(),
         }).unwrap();
 
-        toast.success("Inventory item cataloged successfully 🎉");
+        handleMutationResult(res, "Inventory item cataloged successfully 🎉");
       }
       onOpenChange(false);
       methods.reset();

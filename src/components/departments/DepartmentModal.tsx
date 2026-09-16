@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { TDepartment } from "@/type";
+import { handleMutationResult } from "@/lib/notifyMutation";
 
 interface DepartmentModalProps {
   open: boolean;
@@ -77,21 +78,21 @@ export default function DepartmentModal({
   const onSubmit = async (data: TDepartmentFormInput) => {
     try {
       if (isEdit && department) {
-        await updateDepartment({
+        const res = await updateDepartment({
           id: department.id,
           body: {
             name: data.name.trim(),
             description: data.description?.trim(),
           },
         }).unwrap();
-        toast.success("Department updated successfully 🎉");
+        handleMutationResult(res, "Department updated successfully 🎉");
       } else {
-        await createDepartment({
+        const res = await createDepartment({
           name: data.name.trim(),
           code: data.code.trim().toUpperCase(),
           description: data.description?.trim(),
         }).unwrap();
-        toast.success("Department created successfully 🎉");
+        handleMutationResult(res, "Department created successfully 🎉");
       }
       onOpenChange(false);
       methods.reset();

@@ -30,6 +30,7 @@ import {
   Building2,
   User as UserIcon,
   Package,
+  Pencil,
 } from "lucide-react";
 import { useSubmitRequisitionMutation } from "@/redux/api/requisitionApi";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -40,12 +41,14 @@ interface RequisitionDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   requisition: TRequisition | null;
+  onEdit?: (req: TRequisition) => void;
 }
 
 export default function RequisitionDetailsModal({
   open,
   onOpenChange,
   requisition,
+  onEdit,
 }: RequisitionDetailsModalProps) {
   const { user } = useCurrentUser();
   const { can } = usePermission();
@@ -56,13 +59,19 @@ export default function RequisitionDetailsModal({
 
   const isOwner = user?.id === requisition.requesterId;
   const canSubmit =
-    isOwner && requisition.status === "DRAFT" && can("requisition.submit");
+    isOwner &&
+    (requisition.status === "DRAFT" || requisition.status === "REJECTED") &&
+    can("requisition.submit");
   const lines = requisition.lines || requisition.items || [];
 
   const handleSubmit = async () => {
     try {
       await submitRequisition(requisition.id).unwrap();
-      toast.success("Requisition submitted for departmental review.");
+      toast.success(
+        requisition.status === "REJECTED"
+          ? "Requisition revised and resubmitted for Super Admin approval."
+          : "Requisition submitted for departmental review."
+      );
       onOpenChange(false);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to submit requisition");
@@ -97,6 +106,22 @@ export default function RequisitionDetailsModal({
         </DialogHeader>
 
         <div className="space-y-5 py-2">
+          {/* Rejection Feedback Alert */}
+          {requisition.status === "REJECTED" && (
+            <div className="p-3.5 rounded-lg border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <XCircle className="size-4 text-rose-600 shrink-0" />
+                <span>Super Admin Rejection Feedback:</span>
+              </div>
+              <p className="pl-5 text-foreground leading-relaxed font-medium">
+                "{requisition.remarks || "Requisition was rejected by the reviewer."}"
+              </p>
+              <p className="pl-5 text-[11px] text-muted-foreground mt-1">
+                You can address this feedback and click "Resubmit Requisition" below to send it back to Super Admin for approval.
+              </p>
+            </div>
+          )}
+
           {/* Summary Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 rounded-lg border bg-muted/20 text-xs">
             <div className="space-y-1">
@@ -218,7 +243,7 @@ export default function RequisitionDetailsModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-4 flex items-center justify-between sm:justify-between w-full">
+        <DialogFooter className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 w-full">
           <Button
             type="button"
             variant="outline"
@@ -227,17 +252,40 @@ export default function RequisitionDetailsModal({
             Close
           </Button>
 
-          {canSubmit && (
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="gap-1.5"
-            >
-              <Send className="size-4" />
-              Submit for Approval
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {isOwner && (requisition.status === "DRAFT" || requisition.status === "REJECTED") && onEdit && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  onOpenChange(false);
+                  onEdit(requisition);
+                }}
+                className="gap-1.5"
+              >
+                <Pencil className="size-3.5" />
+                Edit Items & Details
+              </Button>
+            )}
+
+            {canSubmit && (
+              <Button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className={
+                  requisition.status === "REJECTED"
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                    : "gap-1.5"
+                }
+              >
+                <Send className="size-4" />
+                {requisition.status === "REJECTED"
+                  ? "Revise & Resubmit for Approval"
+                  : "Submit for Approval"}
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

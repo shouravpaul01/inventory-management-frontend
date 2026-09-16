@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -15,7 +15,11 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/shared/form/FormInput";
 import { FormTextarea } from "@/components/shared/form/FormTextarea";
 import { FormSelect } from "@/components/shared/form/FormSelect";
-import { useCreateRequisitionMutation } from "@/redux/api/requisitionApi";
+import {
+  useCreateRequisitionMutation,
+  useUpdateRequisitionMutation,
+  useSubmitRequisitionMutation,
+} from "@/redux/api/requisitionApi";
 import { useGetDepartmentsQuery } from "@/redux/api/departmentApi";
 import { useGetItemsQuery } from "@/redux/api/itemApi";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -31,19 +35,32 @@ import {
   Trash2,
   Calendar,
   AlertCircle,
+  Send,
+  Save,
 } from "lucide-react";
+import { TRequisition } from "@/type";
 
 interface RequisitionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  requisitionToEdit?: TRequisition | null;
+  onSuccess?: () => void;
 }
 
 export default function RequisitionModal({
   open,
   onOpenChange,
+  requisitionToEdit,
+  onSuccess,
 }: RequisitionModalProps) {
   const { user } = useCurrentUser();
-  const [createRequisition, { isLoading }] = useCreateRequisitionMutation();
+  const [createRequisition, { isLoading: isCreating }] = useCreateRequisitionMutation();
+  const [updateRequisition, { isLoading: isUpdating }] = useUpdateRequisitionMutation();
+  const [submitRequisition, { isLoading: isSubmitting }] = useSubmitRequisitionMutation();
+  const [submitAfterSave, setSubmitAfterSave] = useState(false);
+
+  const isEdit = !!requisitionToEdit;
+  const isLoading = isCreating || isUpdating || isSubmitting;
 
   const { data: departmentsData } = useGetDepartmentsQuery({ limit: 100 });
   const departments = departmentsData?.data || [];
@@ -96,29 +113,109 @@ export default function RequisitionModal({
     name: "lines",
   });
 
+  // Populate form if editing
+  useEffect(() => {
+    if (open && requisitionToEdit) {
+      const existingLines = requisitionToEdit.lines || requisitionToEdit.items || [];
+      reset({
+        type: requisitionToEdit.type || "REQUISITION",
+        departmentId: requisitionToEdit.departmentId || user?.departmentId || "",
+        purpose: requisitionToEdit.purpose || "",
+        remarks: requisitionToEdit.remarks || "",
+        isTemporary: !!requisitionToEdit.isTemporary,
+        requiredFrom: requisitionToEdit.requiredFrom
+          ? new Date(requisitionToEdit.requiredFrom).toISOString().split("T")[0]
+          : "",
+        requiredUntil: requisitionToEdit.requiredUntil
+          ? new Date(requisitionToEdit.requiredUntil).toISOString().split("T")[0]
+          : "",
+        lines: existingLines.length > 0
+          ? existingLines.map((l: any) => ({
+              inventoryItemId: l.inventoryItemId || l.itemId || "",
+              requestedQty: Number(l.requestedQty || l.quantity || 1),
+              requestedIssuePolicy: l.requestedIssuePolicy || "PERMANENT",
+              remarks: l.remarks || "",
+            }))
+          : [
+              {
+                inventoryItemId: "",
+                requestedQty: 1,
+                requestedIssuePolicy: "PERMANENT",
+                remarks: "",
+              },
+            ],
+      });
+    } else if (open && !requisitionToEdit) {
+      reset({
+        type: "REQUISITION",
+        departmentId: user?.departmentId || "",
+        purpose: "",
+        remarks: "",
+        isTemporary: false,
+        requiredFrom: "",
+        requiredUntil: "",
+        lines: [
+          {
+            inventoryItemId: "",
+            requestedQty: 1,
+            requestedIssuePolicy: "PERMANENT",
+            remarks: "",
+          },
+        ],
+      });
+    }
+  }, [open, requisitionToEdit, reset, user]);
+
   const onSubmit = async (values: TCreateRequisitionInput) => {
     try {
-      await createRequisition({
-        type: values.type,
-        departmentId: values.departmentId,
-        purpose: values.purpose,
-        remarks: values.remarks || undefined,
-        isTemporary: values.isTemporary,
-        requiredFrom: values.requiredFrom ? new Date(values.requiredFrom).toISOString() : undefined,
-        requiredUntil: values.requiredUntil ? new Date(values.requiredUntil).toISOString() : undefined,
-        lines: values.lines.map((l) => ({
-          inventoryItemId: l.inventoryItemId,
-          requestedQty: Number(l.requestedQty),
-          requestedIssuePolicy: l.requestedIssuePolicy,
-          remarks: l.remarks || undefined,
-        })),
-      }).unwrap();
+      if (isEdit && requisitionToEdit) {
+        await updateRequisition({
+          id: requisitionToEdit.id,
+          body: {
+            purpose: values.purpose,
+            remarks: values.remarks || undefined,
+            isTemporary: values.isTemporary,
+            requiredFrom: values.requiredFrom ? new Date(values.requiredFrom).toISOString() : undefined,
+            requiredUntil: values.requiredUntil ? new Date(values.requiredUntil).toISOString() : undefined,
+            lines: values.lines.map((l) => ({
+              inventoryItemId: l.inventoryItemId,
+              requestedQty: Number(l.requestedQty),
+              requestedIssuePolicy: l.requestedIssuePolicy,
+              remarks: l.remarks || undefined,
+            })),
+          },
+        }).unwrap();
 
-      toast.success("Draft requisition created successfully. Submit it when ready for review.");
-      reset();
+        if (submitAfterSave) {
+          await submitRequisition(requisitionToEdit.id).unwrap();
+          toast.success("Requisition updated and resubmitted to Super Admin for approval! 🎉");
+        } else {
+          toast.success("Requisition changes saved successfully 🎉");
+        }
+      } else {
+        await createRequisition({
+          type: values.type,
+          departmentId: values.departmentId,
+          purpose: values.purpose,
+          remarks: values.remarks || undefined,
+          isTemporary: values.isTemporary,
+          requiredFrom: values.requiredFrom ? new Date(values.requiredFrom).toISOString() : undefined,
+          requiredUntil: values.requiredUntil ? new Date(values.requiredUntil).toISOString() : undefined,
+          lines: values.lines.map((l) => ({
+            inventoryItemId: l.inventoryItemId,
+            requestedQty: Number(l.requestedQty),
+            requestedIssuePolicy: l.requestedIssuePolicy,
+            remarks: l.remarks || undefined,
+          })),
+        }).unwrap();
+
+        toast.success("Draft requisition created successfully. Submit it when ready for review.");
+      }
+
+      onSuccess?.();
       onOpenChange(false);
     } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to create requisition");
+      toast.error(err?.data?.message || "Failed to process requisition");
     }
   };
 
@@ -128,12 +225,31 @@ export default function RequisitionModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-primary">
             <FileText className="size-5" />
-            Create Material Requisition
+            {isEdit
+              ? `Edit Requisition: ${requisitionToEdit.requestNumber || requisitionToEdit.requisitionNo || "Draft"}`
+              : "Create Material Requisition"}
           </DialogTitle>
           <DialogDescription>
-            Submit an institutional requisition for consumables, lab assets, or temporary equipment.
+            {isEdit
+              ? "Modify requisition quantities, items, or justification before approval resubmission."
+              : "Submit an institutional requisition for consumables, lab assets, or temporary equipment."}
           </DialogDescription>
         </DialogHeader>
+
+        {isEdit && requisitionToEdit?.status === "REJECTED" && (
+          <div className="p-3.5 rounded-lg border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs space-y-1 my-1">
+            <div className="flex items-center gap-1.5 font-bold">
+              <AlertCircle className="size-4 text-rose-600 shrink-0" />
+              <span>Super Admin Rejection Feedback to Address:</span>
+            </div>
+            <p className="pl-5 text-foreground leading-relaxed font-medium">
+              "{requisitionToEdit.remarks || "No detailed comments provided."}"
+            </p>
+            <p className="pl-5 text-[11px] text-muted-foreground mt-1">
+              Please modify the requested items, quantities, or justification below, then click "Save & Resubmit to Super Admin".
+            </p>
+          </div>
+        )}
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
@@ -288,7 +404,7 @@ export default function RequisitionModal({
               placeholder="Any additional notes for Department Head or Storekeeper..."
             />
 
-            <DialogFooter className="pt-4">
+            <DialogFooter className="pt-4 flex flex-col sm:flex-row items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -297,13 +413,49 @@ export default function RequisitionModal({
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Create Draft Requisition
-              </Button>
+
+              {isEdit ? (
+                <>
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabled={isLoading}
+                    onClick={() => setSubmitAfterSave(false)}
+                    className="gap-1.5"
+                  >
+                    {isUpdating && <Loader2 className="mr-1.5 size-4 animate-spin" />}
+                    <Save className="size-4" />
+                    Save Changes
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    onClick={() => setSubmitAfterSave(true)}
+                    className={
+                      requisitionToEdit?.status === "REJECTED"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                        : "gap-1.5"
+                    }
+                  >
+                    {(isUpdating || isSubmitting) && (
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                    )}
+                    <Send className="size-4" />
+                    {requisitionToEdit?.status === "REJECTED"
+                      ? "Save & Resubmit to Super Admin"
+                      : "Save & Submit for Approval"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  Create Draft Requisition
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </FormProvider>

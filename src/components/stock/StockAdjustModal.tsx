@@ -22,6 +22,7 @@ import { stockAdjustSchema, TStockAdjustInput } from "@/validation/stock.validat
 import { toast } from "sonner";
 import { Loader2, SlidersHorizontal, Upload, AlertCircle } from "lucide-react";
 import { TStockBalance } from "@/type";
+import { handleMutationResult } from "@/lib/notifyMutation";
 
 interface StockAdjustModalProps {
   open: boolean;
@@ -107,8 +108,8 @@ export default function StockAdjustModal({
         formData.append("photo", selectedPhoto);
       }
 
-      await adjustStock(formData).unwrap();
-      toast.success("Stock balance adjusted and audit record logged.");
+      const res = await adjustStock(formData).unwrap();
+      handleMutationResult(res, "Stock balance adjusted and audit record logged.");
       reset();
       setSelectedPhoto(null);
       setPhotoPreview(null);

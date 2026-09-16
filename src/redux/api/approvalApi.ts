@@ -1,8 +1,10 @@
 import { baseApi } from "@/redux/api/baseApi";
 import {
   TApiResponse,
+  TApprovalPolicy,
   TApprovalRequest,
   TApprovalStatus,
+  TExemptionSummary,
 } from "@/type";
 
 export type TApprovalQueryParams = {
@@ -54,15 +56,97 @@ export const approvalApi = baseApi.injectEndpoints({
         method: "POST",
         body: { decision, comments },
       }),
-      invalidatesTags: ["Approval", "Requisition", "Stock"],
+      invalidatesTags: ["Approval", "Requisition", "Stock", "InventoryItem", "Category", "Department"],
     }),
 
-    getApprovalPolicies: builder.query<TApiResponse<any[]>, void>({
+    resubmitApprovalRequest: builder.mutation<
+      TApiResponse<TApprovalRequest>,
+      {
+        id: string;
+        updatedPayload: Record<string, any>;
+        resubmitReason?: string;
+      }
+    >({
+      query: ({ id, updatedPayload, resubmitReason }) => ({
+        url: `/approvals/requests/${id}/resubmit`,
+        method: "PATCH",
+        body: { updatedPayload, resubmitReason },
+      }),
+      invalidatesTags: ["Approval", "Requisition", "Stock", "InventoryItem", "Category"],
+    }),
+
+    getExemptionSummary: builder.query<TApiResponse<TExemptionSummary>, void>({
       query: () => ({
-        url: "/approvals/policies",
+        url: "/approvals/policies/summary/exemptions",
         method: "GET",
       }),
       providesTags: ["Approval"],
+    }),
+
+    getApprovalPolicies: builder.query<
+      TApiResponse<TApprovalPolicy[]>,
+      Record<string, any> | void
+    >({
+      query: (params) => ({
+        url: "/approvals/policies",
+        method: "GET",
+        params: params || {},
+      }),
+      providesTags: ["Approval"],
+    }),
+
+    createPolicy: builder.mutation<
+      TApiResponse<TApprovalPolicy | TApprovalPolicy[]>,
+      {
+        permissionCode?: string;
+        permissionCodes?: string[];
+        requirement?: "REQUIRED" | "NOT_REQUIRED";
+        scope?: "ROLE" | "USER" | "SYSTEM";
+        roleId?: string;
+        userId?: string;
+        condition?: any;
+        approvalLevelCount?: number;
+        allowSelfApproval?: boolean;
+      }
+    >({
+      query: (body) => ({
+        url: "/approvals/policies",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Approval"],
+    }),
+
+    updatePolicy: builder.mutation<
+      TApiResponse<TApprovalPolicy>,
+      {
+        id: string;
+        permissionCode?: string;
+        permissionCodes?: string[];
+        requirement?: "REQUIRED" | "NOT_REQUIRED";
+        scope?: "ROLE" | "USER" | "SYSTEM";
+        roleId?: string | null;
+        userId?: string | null;
+        condition?: any;
+        isActive?: boolean;
+        approvalLevelCount?: number;
+        allowSelfApproval?: boolean;
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/approvals/policies/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Approval"],
+    }),
+
+    deletePolicy: builder.mutation<TApiResponse<any>, string>({
+      query: (id) => ({
+        url: `/approvals/policies/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Approval"],
     }),
   }),
 });
@@ -71,5 +155,10 @@ export const {
   useGetApprovalRequestsQuery,
   useGetApprovalRequestByIdQuery,
   useActionApprovalRequestMutation,
+  useResubmitApprovalRequestMutation,
+  useGetExemptionSummaryQuery,
   useGetApprovalPoliciesQuery,
+  useCreatePolicyMutation,
+  useUpdatePolicyMutation,
+  useDeletePolicyMutation,
 } = approvalApi;

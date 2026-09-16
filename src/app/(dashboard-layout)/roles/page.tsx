@@ -10,6 +10,7 @@ import { useGetRolesQuery, useDeleteRoleMutation } from "@/redux/api/rbacApi";
 import { usePermission } from "@/hooks/usePermission";
 import { TRole } from "@/type";
 import { toast } from "sonner";
+import PermissionGuard from "@/components/shared/PermissionGuard";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,9 @@ export default function RolesPage() {
     name: string;
   } | null>(null);
 
-  const { data, isLoading } = useGetRolesQuery();
+  const { data, isLoading } = useGetRolesQuery(undefined, {
+    skip: !can("role.view"),
+  });
   const [deleteRole, { isLoading: isDeleting }] = useDeleteRoleMutation();
 
   const roles = data?.data || [];
@@ -63,7 +66,8 @@ export default function RolesPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PermissionGuard permission="role.view">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <SectionHeader
@@ -129,6 +133,7 @@ export default function RolesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }

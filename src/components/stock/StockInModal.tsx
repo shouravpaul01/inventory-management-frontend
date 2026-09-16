@@ -22,6 +22,7 @@ import { stockInSchema, TStockInInput } from "@/validation/stock.validation";
 import { toast } from "sonner";
 import { Loader2, PlusCircle, Upload, Image as ImageIcon } from "lucide-react";
 import { TStockBalance } from "@/type";
+import { handleMutationResult } from "@/lib/notifyMutation";
 
 interface StockInModalProps {
   open: boolean;
@@ -97,8 +98,8 @@ export default function StockInModal({
         formData.append("photo", selectedPhoto);
       }
 
-      await stockIn(formData).unwrap();
-      toast.success("Stock received and balance updated successfully.");
+      const res = await stockIn(formData).unwrap();
+      handleMutationResult(res, "Stock received and balance updated successfully.");
       methods.reset();
       setSelectedPhoto(null);
       setPhotoPreview(null);

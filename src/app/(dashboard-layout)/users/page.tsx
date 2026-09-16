@@ -16,6 +16,7 @@ import { useGetDepartmentsQuery } from "@/redux/api/departmentApi";
 import { usePermission } from "@/hooks/usePermission";
 import { useDebounce } from "@/hooks/useDebounce";
 import { TUser, TUserStatus } from "@/type";
+import PermissionGuard from "@/components/shared/PermissionGuard";
 
 export default function UsersPage() {
   const { can } = usePermission();
@@ -39,13 +40,16 @@ export default function UsersPage() {
   const { data: deptData } = useGetDepartmentsQuery({ limit: 100 });
   const departments = deptData?.data || [];
 
-  const { data, isLoading } = useGetUsersQuery({
-    searchTerm: debouncedSearch || undefined,
-    departmentId: departmentId || undefined,
-    status: (status as TUserStatus) || undefined,
-    page,
-    limit,
-  });
+  const { data, isLoading } = useGetUsersQuery(
+    {
+      searchTerm: debouncedSearch || undefined,
+      departmentId: departmentId || undefined,
+      status: (status as TUserStatus) || undefined,
+      page,
+      limit,
+    },
+    { skip: !can("user.view") }
+  );
 
   const users = data?.data || [];
   const meta = data?.meta || {
@@ -76,7 +80,8 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PermissionGuard permission="user.view">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <SectionHeader
@@ -200,6 +205,7 @@ export default function UsersPage() {
         onOpenChange={setPermissionsModalOpen}
         user={selectedUser}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }

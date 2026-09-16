@@ -11,10 +11,14 @@ import AuditTable from "@/components/audit/AuditTable";
 import AuditDetailsModal from "@/components/audit/AuditDetailsModal";
 import { useGetAuditLogsQuery } from "@/redux/api/auditApi";
 import { useDebounce } from "@/hooks/useDebounce";
+import { usePermission } from "@/hooks/usePermission";
 import { TAuditLog } from "@/type";
 import { toast } from "sonner";
+import PermissionGuard from "@/components/shared/PermissionGuard";
 
 export default function AuditLogsPage() {
+  const { can } = usePermission();
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
 
@@ -27,15 +31,18 @@ export default function AuditLogsPage() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedLog, setSelectedLog] = useState<TAuditLog | null>(null);
 
-  const { data, isLoading } = useGetAuditLogsQuery({
-    searchTerm: debouncedSearch || undefined,
-    module: moduleFilter || undefined,
-    action: actionFilter || undefined,
-    page,
-    limit,
-    sortBy: "createdAt",
-    sortOrder: "desc",
-  });
+  const { data, isLoading } = useGetAuditLogsQuery(
+    {
+      searchTerm: debouncedSearch || undefined,
+      module: moduleFilter || undefined,
+      action: actionFilter || undefined,
+      page,
+      limit,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    },
+    { skip: !can("audit.view") }
+  );
 
   const logs = data?.data || [];
   const meta = data?.meta || {
@@ -83,7 +90,8 @@ export default function AuditLogsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PermissionGuard permission="audit.view">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <SectionHeader
@@ -218,6 +226,7 @@ export default function AuditLogsPage() {
         onOpenChange={setDetailsModalOpen}
         log={selectedLog}
       />
-    </div>
+      </div>
+    </PermissionGuard>
   );
 }
