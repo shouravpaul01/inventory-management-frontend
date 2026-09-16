@@ -93,8 +93,8 @@ export default function RoomModal({ open, onOpenChange }: RoomModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle>Register Room / Laboratory</DialogTitle>
           <DialogDescription>
             Add a department room, lab, or office for inventory asset allocation.
@@ -102,78 +102,80 @@ export default function RoomModal({ open, onOpenChange }: RoomModalProps) {
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-foreground">
-                  Building Filter
-                </label>
-                <FilterSelect
-                  placeholder="Building"
-                  value={selectedBuildingId}
-                  onChange={(val) => setSelectedBuildingId(val)}
-                  options={buildingOptions}
-                  includeAllOption
-                  allLabel="All Buildings"
-                  className="h-10!"
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-foreground">
+                    Building Filter
+                  </label>
+                  <FilterSelect
+                    placeholder="Building"
+                    value={selectedBuildingId}
+                    onChange={(val) => setSelectedBuildingId(val)}
+                    options={buildingOptions}
+                    includeAllOption
+                    allLabel="All Buildings"
+                    className="h-10!"
+                  />
+                </div>
+
+                <FormSelect
+                  name="floorId"
+                  label="Floor / Level"
+                  placeholder="Select Floor"
+                  options={floorOptions}
+                  disabled={isLoading}
+                  required
                 />
               </div>
 
-              <FormSelect
-                name="floorId"
-                label="Floor / Level"
-                placeholder="Select Floor"
-                options={floorOptions}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormInput
+                  name="name"
+                  label="Room Name"
+                  placeholder="e.g. AI & Robotics Lab"
+                  disabled={isLoading}
+                  required
+                />
+
+                <FormInput
+                  name="code"
+                  label="Room Code"
+                  placeholder="e.g. LAB-304"
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormSelect
+                  name="roomTypeId"
+                  label="Room Type (Optional)"
+                  placeholder="Select Type"
+                  options={roomTypeOptions}
+                  disabled={isLoading}
+                />
+
+                <FormInput
+                  name="capacity"
+                  label="Capacity (Seating/Occupancy)"
+                  type="number"
+                  placeholder="e.g. 40"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <FormTextarea
+                name="description"
+                label="Description (Optional)"
+                placeholder="Room purpose, equipment installed, or custody details"
                 disabled={isLoading}
-                required
+                rows={2}
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormInput
-                name="name"
-                label="Room Name"
-                placeholder="e.g. AI & Robotics Lab"
-                disabled={isLoading}
-                required
-              />
-
-              <FormInput
-                name="code"
-                label="Room Code"
-                placeholder="e.g. LAB-304"
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormSelect
-                name="roomTypeId"
-                label="Room Type (Optional)"
-                placeholder="Select Type"
-                options={roomTypeOptions}
-                disabled={isLoading}
-              />
-
-              <FormInput
-                name="capacity"
-                label="Capacity (Seating/Occupancy)"
-                type="number"
-                placeholder="e.g. 40"
-                disabled={isLoading}
-              />
-            </div>
-
-            <FormTextarea
-              name="description"
-              label="Description (Optional)"
-              placeholder="Room purpose, equipment installed, or custody details"
-              disabled={isLoading}
-              rows={2}
-            />
-
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

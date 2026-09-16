@@ -11,6 +11,7 @@ import UserTable from "@/components/users/UserTable";
 import UserModal from "@/components/users/UserModal";
 import UserStatusModal from "@/components/users/UserStatusModal";
 import UserPermissionsModal from "@/components/users/UserPermissionsModal";
+import UserRolesModal from "@/components/users/UserRolesModal";
 import { useGetUsersQuery } from "@/redux/api/userApi";
 import { useGetDepartmentsQuery } from "@/redux/api/departmentApi";
 import { usePermission } from "@/hooks/usePermission";
@@ -33,6 +34,7 @@ export default function UsersPage() {
   // Modals state
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [rolesModalOpen, setRolesModalOpen] = useState(false);
   const [permissionsModalOpen, setPermissionsModalOpen] = useState(false);
 
   const [selectedUser, setSelectedUser] = useState<TUser | null>(null);
@@ -72,6 +74,11 @@ export default function UsersPage() {
   const handleOpenStatus = (user: TUser) => {
     setSelectedUser(user);
     setStatusModalOpen(true);
+  };
+
+  const handleOpenRoles = (user: TUser) => {
+    setSelectedUser(user);
+    setRolesModalOpen(true);
   };
 
   const handleOpenPermissions = (user: TUser) => {
@@ -169,6 +176,7 @@ export default function UsersPage() {
         isLoading={isLoading}
         onEdit={handleOpenEdit}
         onChangeStatus={handleOpenStatus}
+        onManageRoles={handleOpenRoles}
         onOverridePermissions={handleOpenPermissions}
       />
 
@@ -200,10 +208,20 @@ export default function UsersPage() {
         user={selectedUser}
       />
 
+      <UserRolesModal
+        open={rolesModalOpen}
+        onOpenChange={setRolesModalOpen}
+        user={selectedUser}
+      />
+
       <UserPermissionsModal
         open={permissionsModalOpen}
         onOpenChange={setPermissionsModalOpen}
         user={selectedUser}
+        onOpenRoles={() => {
+          setPermissionsModalOpen(false);
+          setRolesModalOpen(true);
+        }}
       />
       </div>
     </PermissionGuard>

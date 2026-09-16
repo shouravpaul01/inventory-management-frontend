@@ -80,8 +80,8 @@ export default function RequisitionDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
@@ -105,7 +105,7 @@ export default function RequisitionDetailsModal({
           </div>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Rejection Feedback Alert */}
           {requisition.status === "REJECTED" && (
             <div className="p-3.5 rounded-lg border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs space-y-1">
@@ -243,7 +243,7 @@ export default function RequisitionDetailsModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 w-full">
+        <DialogFooter className="p-4 border-t bg-card shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2 w-full">
           <Button
             type="button"
             variant="outline"

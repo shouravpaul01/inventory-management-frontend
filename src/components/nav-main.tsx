@@ -45,7 +45,7 @@ export function NavMain({
   const { can, canAny } = usePermission();
 
   const activeClass =
-    "bg-primary text-primary-foreground font-medium hover:bg-primary hover:text-primary-foreground";
+    "bg-primary! text-primary-foreground! font-medium hover:bg-primary hover:text-primary-foreground";
 
   // Filter items based on user permissions
   const filteredItems = items
@@ -107,7 +107,7 @@ export function NavMain({
                   asChild
                   tooltip={item.title}
                   isActive={isParentActive}
-                  className={cn(isParentActive && activeClass)}
+                  className={cn(isParentActive && activeClass,"h-10")}
                 >
                   <Link href={item.url}>
                     {item.icon}

@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Building2,
   Lock,
+  KeyRound,
 } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
 
@@ -35,6 +36,7 @@ interface UserTableProps {
   isLoading: boolean;
   onEdit: (user: TUser) => void;
   onChangeStatus: (user: TUser) => void;
+  onManageRoles?: (user: TUser) => void;
   onOverridePermissions?: (user: TUser) => void;
 }
 
@@ -43,12 +45,14 @@ export default function UserTable({
   isLoading,
   onEdit,
   onChangeStatus,
+  onManageRoles,
   onOverridePermissions,
 }: UserTableProps) {
   const { can } = usePermission();
 
   const canUpdate = can("user.update");
   const canStatus = can("user.status");
+  const canManageRoles = can("user.manage_roles") || can("user.update");
   const canOverride = can("user.override_permission");
 
   return (
@@ -168,7 +172,7 @@ export default function UserTable({
                     </Badge>
                   </TableCell>
 
-                  {(canUpdate || canStatus || canOverride) && (
+                  {(canUpdate || canStatus || canManageRoles || canOverride) && (
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -180,13 +184,31 @@ export default function UserTable({
                             <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuContent align="end" className="w-48">
+                          {canManageRoles && onManageRoles && (
+                            <DropdownMenuItem
+                              onClick={() => onManageRoles(user)}
+                              className="cursor-pointer"
+                            >
+                              <KeyRound className="mr-2 size-4 text-purple-600" />
+                              <span>Assign Roles</span>
+                            </DropdownMenuItem>
+                          )}
+                          {canOverride && onOverridePermissions && (
+                            <DropdownMenuItem
+                              onClick={() => onOverridePermissions(user)}
+                              className="cursor-pointer"
+                            >
+                              <ShieldCheck className="mr-2 size-4 text-primary" />
+                              <span>Override Permissions</span>
+                            </DropdownMenuItem>
+                          )}
                           {canUpdate && (
                             <DropdownMenuItem
                               onClick={() => onEdit(user)}
                               className="cursor-pointer"
                             >
-                              <Edit className="mr-2 size-4" />
+                              <Edit className="mr-2 size-4 text-muted-foreground" />
                               <span>Edit Account</span>
                             </DropdownMenuItem>
                           )}
@@ -195,17 +217,8 @@ export default function UserTable({
                               onClick={() => onChangeStatus(user)}
                               className="cursor-pointer"
                             >
-                              <ShieldAlert className="mr-2 size-4" />
+                              <ShieldAlert className="mr-2 size-4 text-amber-600" />
                               <span>Change Status</span>
-                            </DropdownMenuItem>
-                          )}
-                          {canOverride && onOverridePermissions && (
-                            <DropdownMenuItem
-                              onClick={() => onOverridePermissions(user)}
-                              className="cursor-pointer"
-                            >
-                              <ShieldCheck className="mr-2 size-4" />
-                              <span>Permissions</span>
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>

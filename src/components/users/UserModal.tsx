@@ -128,12 +128,10 @@ export default function UserModal({
           },
         }).unwrap();
 
-        if (selectedRoleIds.length > 0) {
-          await assignUserRoles({
-            id: user.id,
-            roleIds: selectedRoleIds,
-          }).unwrap();
-        }
+        await assignUserRoles({
+          id: user.id,
+          roleIds: selectedRoleIds,
+        }).unwrap();
 
         toast.success("User account updated successfully 🎉");
       } else {
@@ -160,12 +158,12 @@ export default function UserModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle>
             {isEdit ? "Edit Staff Account" : "Register Institutional Staff"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             {isEdit
               ? "Update personnel information, departmental affiliation, and assigned roles."
               : "Provision a new university faculty, administrator, or storekeeper user."}
@@ -173,7 +171,8 @@ export default function UserModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormInput
                 name="firstName"
@@ -269,7 +268,9 @@ export default function UserModal({
               </div>
             </div>
 
-            <DialogFooter className="pt-2">
+            </div>
+
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

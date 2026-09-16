@@ -259,14 +259,14 @@ export default function StockLedgerTable({
 
       {/* Photo Preview Dialog */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <DialogHeader className="p-4 border-b bg-card shrink-0">
             <DialogTitle className="text-sm font-semibold flex items-center gap-2">
               <ImageIcon className="size-4 text-primary" />
               Movement Evidence Photo
             </DialogTitle>
           </DialogHeader>
-          <div className="py-2 flex items-center justify-center">
+          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
             {selectedPhoto && (
               <img
                 src={selectedPhoto}

@@ -184,8 +184,8 @@ export default function ReturnModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-primary">
             <RotateCcw className="size-5" />
             Process Material Return & Restocking
@@ -196,8 +196,9 @@ export default function ReturnModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormSelect
                 name="distributionId"
                 label="Original Distribution Reference"
@@ -361,8 +362,9 @@ export default function ReturnModal({
                 )}
               </div>
             </div>
+          </div>
 
-            <DialogFooter className="pt-4">
+          <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

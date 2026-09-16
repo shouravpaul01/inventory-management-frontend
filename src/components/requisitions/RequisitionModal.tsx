@@ -221,190 +221,192 @@ export default function RequisitionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-primary">
             <FileText className="size-5" />
             {isEdit
               ? `Edit Requisition: ${requisitionToEdit.requestNumber || requisitionToEdit.requisitionNo || "Draft"}`
               : "Create Material Requisition"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             {isEdit
               ? "Modify requisition quantities, items, or justification before approval resubmission."
               : "Submit an institutional requisition for consumables, lab assets, or temporary equipment."}
           </DialogDescription>
         </DialogHeader>
 
-        {isEdit && requisitionToEdit?.status === "REJECTED" && (
-          <div className="p-3.5 rounded-lg border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs space-y-1 my-1">
-            <div className="flex items-center gap-1.5 font-bold">
-              <AlertCircle className="size-4 text-rose-600 shrink-0" />
-              <span>Super Admin Rejection Feedback to Address:</span>
-            </div>
-            <p className="pl-5 text-foreground leading-relaxed font-medium">
-              "{requisitionToEdit.remarks || "No detailed comments provided."}"
-            </p>
-            <p className="pl-5 text-[11px] text-muted-foreground mt-1">
-              Please modify the requested items, quantities, or justification below, then click "Save & Resubmit to Super Admin".
-            </p>
-          </div>
-        )}
-
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormSelect
-                name="departmentId"
-                label="Target Department"
-                placeholder="Select Department"
-                options={departmentOptions}
-                required
-              />
-
-              <FormSelect
-                name="type"
-                label="Request Type"
-                options={[
-                  { value: "REQUISITION", label: "Internal Requisition" },
-                  { value: "ORDER", label: "Procurement / Purchase Order" },
-                ]}
-                required
-              />
-            </div>
-
-            <FormInput
-              name="purpose"
-              label="Purpose / Justification"
-              placeholder="e.g. Laboratory Practical Session CS-201 or Office Stationery for Exam Office"
-              required
-            />
-
-            {/* Temporary Loan Checkbox */}
-            <div className="rounded-lg border p-3.5 bg-muted/20 space-y-3">
-              <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isTemporary}
-                  onChange={(e) => setValue("isTemporary", e.target.checked)}
-                  className="rounded border-input text-primary focus:ring-primary size-4"
-                />
-                <span>This is a Temporary Loan (Equipment must be returned after use)</span>
-              </label>
-
-              {isTemporary && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                  <FormInput
-                    name="requiredFrom"
-                    label="Required From"
-                    type="date"
-                    required
-                  />
-                  <FormInput
-                    name="requiredUntil"
-                    label="Expected Return Date"
-                    type="date"
-                    required
-                  />
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {isEdit && requisitionToEdit?.status === "REJECTED" && (
+                <div className="p-3.5 rounded-lg border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs space-y-1 mb-2">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <AlertCircle className="size-4 text-rose-600 shrink-0" />
+                    <span>Super Admin Rejection Feedback to Address:</span>
+                  </div>
+                  <p className="pl-5 text-foreground leading-relaxed font-medium">
+                    "{requisitionToEdit.remarks || "No detailed comments provided."}"
+                  </p>
+                  <p className="pl-5 text-[11px] text-muted-foreground mt-1">
+                    Please modify the requested items, quantities, or justification below, then click "Save & Resubmit to Super Admin".
+                  </p>
                 </div>
               )}
-            </div>
 
-            {/* Line Items Section */}
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                  Requested Items ({fields.length})
-                </h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    append({
-                      inventoryItemId: "",
-                      requestedQty: 1,
-                      requestedIssuePolicy: isTemporary ? "TEMPORARY" : "PERMANENT",
-                      remarks: "",
-                    })
-                  }
-                  className="gap-1.5 text-xs h-7"
-                >
-                  <Plus className="size-3.5" />
-                  Add Line Item
-                </Button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSelect
+                  name="departmentId"
+                  label="Target Department"
+                  placeholder="Select Department"
+                  options={departmentOptions}
+                  required
+                />
+
+                <FormSelect
+                  name="type"
+                  label="Request Type"
+                  options={[
+                    { value: "REQUISITION", label: "Internal Requisition" },
+                    { value: "ORDER", label: "Procurement / Purchase Order" },
+                  ]}
+                  required
+                />
               </div>
 
-              <div className="space-y-3">
-                {fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="p-3.5 rounded-lg border bg-card relative space-y-3 shadow-2xs"
-                  >
-                    <div className="flex items-center justify-between border-b pb-2">
-                      <span className="text-xs font-bold text-muted-foreground">
-                        Item #{index + 1}
-                      </span>
-                      {fields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => remove(index)}
-                          className="text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      )}
-                    </div>
+              <FormInput
+                name="purpose"
+                label="Purpose / Justification"
+                placeholder="e.g. Laboratory Practical Session CS-201 or Office Stationery for Exam Office"
+                required
+              />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                      <div className="sm:col-span-7">
-                        <FormSelect
-                          name={`lines.${index}.inventoryItemId`}
-                          label="Inventory Item"
-                          placeholder="Select an item"
-                          options={itemOptions}
-                          required
-                        />
-                      </div>
+              {/* Temporary Loan Checkbox */}
+              <div className="rounded-lg border p-3.5 bg-muted/20 space-y-3">
+                <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isTemporary}
+                    onChange={(e) => setValue("isTemporary", e.target.checked)}
+                    className="rounded border-input text-primary focus:ring-primary size-4"
+                  />
+                  <span>This is a Temporary Loan (Equipment must be returned after use)</span>
+                </label>
 
-                      <div className="sm:col-span-2">
-                        <FormInput
-                          name={`lines.${index}.requestedQty`}
-                          label="Quantity"
-                          type="number"
-                          placeholder="Qty"
-                          required
-                        />
-                      </div>
-
-                      <div className="sm:col-span-3">
-                        <FormSelect
-                          name={`lines.${index}.requestedIssuePolicy`}
-                          label="Issue Policy"
-                          options={policyOptions}
-                        />
-                      </div>
-                    </div>
-
+                {isTemporary && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <FormInput
-                      name={`lines.${index}.remarks`}
-                      label="Item Specific Remarks (Optional)"
-                      placeholder="e.g. Model preference, color, or exact spec..."
+                      name="requiredFrom"
+                      label="Required From"
+                      type="date"
+                      required
+                    />
+                    <FormInput
+                      name="requiredUntil"
+                      label="Expected Return Date"
+                      type="date"
+                      required
                     />
                   </div>
-                ))}
+                )}
               </div>
+
+              {/* Line Items Section */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    Requested Items ({fields.length})
+                  </h4>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      append({
+                        inventoryItemId: "",
+                        requestedQty: 1,
+                        requestedIssuePolicy: isTemporary ? "TEMPORARY" : "PERMANENT",
+                        remarks: "",
+                      })
+                    }
+                    className="gap-1.5 text-xs h-7"
+                  >
+                    <Plus className="size-3.5" />
+                    Add Line Item
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="p-3.5 rounded-lg border bg-card relative space-y-3 shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-xs font-bold text-muted-foreground">
+                          Item #{index + 1}
+                        </span>
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            onClick={() => remove(index)}
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                        <div className="sm:col-span-7">
+                          <FormSelect
+                            name={`lines.${index}.inventoryItemId`}
+                            label="Inventory Item"
+                            placeholder="Select an item"
+                            options={itemOptions}
+                            required
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <FormInput
+                            name={`lines.${index}.requestedQty`}
+                            label="Quantity"
+                            type="number"
+                            placeholder="Qty"
+                            required
+                          />
+                        </div>
+
+                        <div className="sm:col-span-3">
+                          <FormSelect
+                            name={`lines.${index}.requestedIssuePolicy`}
+                            label="Issue Policy"
+                            options={policyOptions}
+                          />
+                        </div>
+                      </div>
+
+                      <FormInput
+                        name={`lines.${index}.remarks`}
+                        label="Item Specific Remarks (Optional)"
+                        placeholder="e.g. Model preference, color, or exact spec..."
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <FormTextarea
+                name="remarks"
+                label="General Remarks / Approval Instructions"
+                placeholder="Any additional notes for Department Head or Storekeeper..."
+              />
             </div>
 
-            <FormTextarea
-              name="remarks"
-              label="General Remarks / Approval Instructions"
-              placeholder="Any additional notes for Department Head or Storekeeper..."
-            />
-
-            <DialogFooter className="pt-4 flex flex-col sm:flex-row items-center justify-end gap-2">
+            <DialogFooter className="p-4 border-t bg-card shrink-0 flex flex-col sm:flex-row items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"

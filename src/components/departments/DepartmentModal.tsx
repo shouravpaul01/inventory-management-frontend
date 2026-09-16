@@ -103,8 +103,8 @@ export default function DepartmentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle>
             {isEdit ? "Edit Department" : "Add New Department"}
           </DialogTitle>
@@ -116,32 +116,34 @@ export default function DepartmentModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-            <FormInput
-              name="name"
-              label="Department Name"
-              placeholder="e.g. Computer Science & Engineering"
-              disabled={isLoading}
-              required
-            />
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <FormInput
+                name="name"
+                label="Department Name"
+                placeholder="e.g. Computer Science & Engineering"
+                disabled={isLoading}
+                required
+              />
 
-            <FormInput
-              name="code"
-              label="Department Code"
-              placeholder="e.g. CSE"
-              disabled={isLoading || isEdit}
-              required
-            />
+              <FormInput
+                name="code"
+                label="Department Code"
+                placeholder="e.g. CSE"
+                disabled={isLoading || isEdit}
+                required
+              />
 
-            <FormTextarea
-              name="description"
-              label="Description (Optional)"
-              placeholder="Brief details about the department or responsibilities"
-              disabled={isLoading}
-              rows={3}
-            />
+              <FormTextarea
+                name="description"
+                label="Description (Optional)"
+                placeholder="Brief details about the department or responsibilities"
+                disabled={isLoading}
+                rows={3}
+              />
+            </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

@@ -93,10 +93,10 @@ export default function DeliveryConfirmModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         {distribution && (
           <>
-            <DialogHeader>
+            <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
               <DialogTitle className="flex items-center gap-2 text-emerald-600 font-bold">
                 <PackageCheck className="size-5" />
                 Acknowledge Delivery: {distribution.distributionNo}
@@ -106,9 +106,10 @@ export default function DeliveryConfirmModal({
               </DialogDescription>
             </DialogHeader>
 
-        <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4 py-2">
-            <FormSelect
+            <FormProvider {...methods}>
+              <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                  <FormSelect
               name="deliveryStatus"
               label="Delivery Status"
               options={[
@@ -153,27 +154,28 @@ export default function DeliveryConfirmModal({
                 )}
               </div>
             </div>
+          </div>
 
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Confirm Receipt
-              </Button>
-            </DialogFooter>
-          </form>
-        </FormProvider>
+          <DialogFooter className="p-4 border-t bg-card shrink-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
+                  Confirm Receipt
+                </Button>
+              </DialogFooter>
+            </form>
+          </FormProvider>
         </>
         )}
       </DialogContent>

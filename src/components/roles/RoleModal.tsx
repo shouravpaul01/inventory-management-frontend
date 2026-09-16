@@ -149,8 +149,8 @@ export default function RoleModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[88vh] p-0 gap-0 overflow-hidden flex flex-col">
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-border/60 shrink-0 pr-12">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Shield className="size-5 text-primary" />
             {isEdit ? "Edit Role & Permissions" : "Define New System Role"}
@@ -168,7 +168,7 @@ export default function RoleModal({
             className="flex-1 overflow-hidden flex flex-col min-h-0"
           >
             {/* Scrollable Middle Content with scrollbar flush to the right edge */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormInput
                   name="name"
@@ -263,7 +263,7 @@ export default function RoleModal({
             </div>
 
             {/* Fixed Footer */}
-            <div className="shrink-0 border-t border-border/60 bg-muted/20 px-6 py-3.5 flex items-center justify-end gap-2.5">
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"
@@ -284,7 +284,7 @@ export default function RoleModal({
                   "Create Role"
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </FormProvider>
       </DialogContent>

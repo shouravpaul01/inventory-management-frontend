@@ -87,7 +87,8 @@ export type TUserPermission = {
   id: string;
   userId: string;
   permissionId: string;
-  granted: boolean;
+  effect: "GRANT" | "REVOKE";
+  granted?: boolean;
   permission: TPermission;
 };
 
@@ -107,6 +108,7 @@ export type TUser = {
   department?: TDepartment | null;
   roles?: TUserRole[] | string[];
   permissions?: TUserPermission[] | string[];
+  effectivePermissions?: string[];
   createdAt: string;
   updatedAt: string;
 };

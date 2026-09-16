@@ -149,22 +149,23 @@ export default function CategoriesPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
             <DialogTitle className="text-destructive flex items-center gap-2">
               <Layers className="size-5" />
               Confirm Category Deletion
             </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete{" "}
-              <strong className="text-foreground">
-                "{catToDelete?.name}"
-              </strong>
-              ? Any items assigned to this category must be reassigned.
-            </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="pt-2">
+          <div className="flex-1 overflow-y-auto p-5 text-xs text-muted-foreground">
+            Are you sure you want to delete{" "}
+            <strong className="text-foreground">
+              "{catToDelete?.name}"
+            </strong>
+            ? Any items assigned to this category must be reassigned.
+          </div>
+
+          <DialogFooter className="p-4 border-t bg-card shrink-0">
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}

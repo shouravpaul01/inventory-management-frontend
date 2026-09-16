@@ -118,9 +118,9 @@ export default function CategoryModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
+          <DialogTitle >
             {isEdit ? "Edit Category" : "Create Inventory Category"}
           </DialogTitle>
           <DialogDescription>
@@ -131,43 +131,48 @@ export default function CategoryModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-            <FormInput
-              name="name"
-              label="Category Name"
-              placeholder="e.g. Computer Hardware, Lab Reagents"
-              disabled={isLoading}
-              required
-            />
+          <form
+            onSubmit={methods.handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          >
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <FormInput
+                name="name"
+                label="Category Name"
+                placeholder="e.g. Computer Hardware, Lab Reagents"
+                disabled={isLoading}
+                required
+              />
 
-            <FormInput
-              name="code"
-              label="Category Code"
-              placeholder="e.g. COMP_HW"
-              disabled={isLoading || isEdit}
-              required
-            />
+              <FormInput
+                name="code"
+                label="Category Code"
+                placeholder="e.g. COMP_HW"
+                disabled={isLoading || isEdit}
+                required
+              />
 
-            <FormSelect
-              name="parentId"
-              label="Parent Category (Optional)"
-              placeholder="Select parent (Leave empty for root)"
-              options={[
-                { value: "", label: "None (Top Level Root Category)" },
-                ...parentOptions,
-              ]}
-              disabled={isLoading}
-            />
+              <FormSelect
+                name="parentId"
+                label="Parent Category (Optional)"
+                placeholder="Select parent (Leave empty for root)"
+                options={[
+                  { value: "", label: "None (Top Level Root Category)" },
+                  ...parentOptions,
+                ]}
+                disabled={isLoading}
+              />
 
-            <FormTextarea
-              name="description"
-              label="Description (Optional)"
-              placeholder="Classification notes or usage description"
-              disabled={isLoading}
-              rows={3}
-            />
+              <FormTextarea
+                name="description"
+                label="Description (Optional)"
+                placeholder="Classification notes or usage description"
+                disabled={isLoading}
+                rows={3}
+              />
+            </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 border-t bg-card shrink-0 flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"

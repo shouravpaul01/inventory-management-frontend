@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -156,7 +157,7 @@ export default function RequisitionCheckoutDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         {/* Header */}
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-border/60 shrink-0 pr-12 bg-muted/20">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
             <FileText className="size-5 text-primary" />
             <span>Complete Requisition Submission</span>
@@ -172,7 +173,7 @@ export default function RequisitionCheckoutDialog({
             className="flex-1 overflow-hidden flex flex-col min-h-0"
           >
             {/* Scrollable Form Body */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 min-h-0">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-0">
               {/* Request Type Switcher */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">
@@ -333,7 +334,7 @@ export default function RequisitionCheckoutDialog({
             </div>
 
             {/* Fixed Footer */}
-            <div className="shrink-0 border-t border-border/60 bg-muted/20 px-6 py-3.5 flex items-center justify-between gap-2.5">
+            <DialogFooter className="p-4 border-t bg-card shrink-0 flex items-center justify-between gap-2.5">
               <Button
                 type="button"
                 variant="outline"
@@ -375,7 +376,7 @@ export default function RequisitionCheckoutDialog({
                   )}
                 </Button>
               </div>
-            </div>
+            </DialogFooter>
           </form>
         </FormProvider>
       </DialogContent>

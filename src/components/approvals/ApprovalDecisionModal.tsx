@@ -151,13 +151,13 @@ export default function ApprovalDecisionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
             <CheckSquare className="size-5 text-primary" />
             Review Approval Task: {request.requestNumber || request.id.slice(-8).toUpperCase()}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             Multi-tier verification for <strong className="text-foreground font-mono">{request.entityType}</strong> ({stagedAction}) requested by{" "}
             <strong className="text-foreground">
               {request.requestedBy
@@ -167,7 +167,7 @@ export default function ApprovalDecisionModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Rejection / Return Feedback Banner */}
           {isRejectedOrCorrection && feedback && (
             <div className="p-3.5 rounded-lg border border-rose-300 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs space-y-1">

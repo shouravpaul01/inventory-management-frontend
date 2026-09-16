@@ -107,8 +107,8 @@ export default function BuildingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle>
             {isEdit ? "Edit Campus Building" : "Register Campus Building"}
           </DialogTitle>
@@ -120,39 +120,41 @@ export default function BuildingModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-            <FormInput
-              name="name"
-              label="Building Name"
-              placeholder="e.g. Science & Technology Complex"
-              disabled={isLoading}
-              required
-            />
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              <FormInput
+                name="name"
+                label="Building Name"
+                placeholder="e.g. Science & Technology Complex"
+                disabled={isLoading}
+                required
+              />
 
-            <FormInput
-              name="code"
-              label="Building Code"
-              placeholder="e.g. BLD-STC"
-              disabled={isLoading || isEdit}
-              required
-            />
+              <FormInput
+                name="code"
+                label="Building Code"
+                placeholder="e.g. BLD-STC"
+                disabled={isLoading || isEdit}
+                required
+              />
 
-            <FormInput
-              name="address"
-              label="Campus Location / Address"
-              placeholder="e.g. North Campus, Academic Block 2"
-              disabled={isLoading}
-            />
+              <FormInput
+                name="address"
+                label="Campus Location / Address"
+                placeholder="e.g. North Campus, Academic Block 2"
+                disabled={isLoading}
+              />
 
-            <FormTextarea
-              name="description"
-              label="Description (Optional)"
-              placeholder="Facility details or operational notes"
-              disabled={isLoading}
-              rows={3}
-            />
+              <FormTextarea
+                name="description"
+                label="Description (Optional)"
+                placeholder="Facility details or operational notes"
+                disabled={isLoading}
+                rows={3}
+              />
+            </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

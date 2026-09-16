@@ -145,8 +145,8 @@ export default function UnitModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <QrCode className="size-5 text-primary" />
@@ -161,29 +161,31 @@ export default function UnitModal({
         </DialogHeader>
 
         {/* Toggle Mode */}
-        <div className="flex rounded-lg border border-border/70 p-1 bg-muted/40">
-          <button
-            type="button"
-            onClick={() => setIsBatchMode(false)}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              !isBatchMode
-                ? "bg-background text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Single Unit Entry
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsBatchMode(true)}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              isBatchMode
-                ? "bg-background text-foreground shadow-2xs"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Batch Unit Generation (e.g. 10+ Units)
-          </button>
+        <div className="p-4 border-b bg-muted/20 shrink-0">
+          <div className="flex rounded-lg border border-border/70 p-1 bg-muted/40">
+            <button
+              type="button"
+              onClick={() => setIsBatchMode(false)}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                !isBatchMode
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Single Unit Entry
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsBatchMode(true)}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                isBatchMode
+                  ? "bg-background text-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Batch Unit Generation (e.g. 10+ Units)
+            </button>
+          </div>
         </div>
 
         {/* SINGLE UNIT FORM */}
@@ -191,8 +193,9 @@ export default function UnitModal({
           <FormProvider {...singleMethods}>
             <form
               onSubmit={singleMethods.handleSubmit(onSingleSubmit)}
-              className="space-y-4"
+              className="flex flex-col flex-1 min-h-0 overflow-hidden"
             >
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <FormSelect
                 name="inventoryItemId"
                 label="Asset Item"
@@ -254,8 +257,9 @@ export default function UnitModal({
                 disabled={isLoading}
                 rows={2}
               />
+              </div>
 
-              <DialogFooter className="pt-2">
+              <DialogFooter className="p-4 border-t bg-card shrink-0">
                 <Button
                   type="button"
                   variant="outline"
@@ -282,8 +286,9 @@ export default function UnitModal({
           <FormProvider {...batchMethods}>
             <form
               onSubmit={batchMethods.handleSubmit(onBatchSubmit)}
-              className="space-y-4"
+              className="flex flex-col flex-1 min-h-0 overflow-hidden"
             >
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <FormSelect
                 name="inventoryItemId"
                 label="Asset Item"
@@ -338,8 +343,9 @@ export default function UnitModal({
                 disabled={isLoading}
                 rows={2}
               />
+              </div>
 
-              <DialogFooter className="pt-2">
+              <DialogFooter className="p-4 border-t bg-card shrink-0">
                 <Button
                   type="button"
                   variant="outline"

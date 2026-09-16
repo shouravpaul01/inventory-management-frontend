@@ -27,19 +27,19 @@ export default function TermsDialog({
 }: TermsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl! flex flex-col  p-0 overflow-hidden">
+      <DialogContent className="max-w-3xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         {/* HEADER */}
-        <DialogHeader className="px-6 py-4 border-b bg-white">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="text-lg font-semibold">Terms & Conditions</DialogTitle>
         </DialogHeader>
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 max-h-[80vh] overflow-y-auto  px-6 py-4">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* <TermsAndConditionCard /> */}
         </div>
 
         {/* FOOTER */}
-        <DialogFooter className="flex justify-center! items-center! pb-10 bg-white">
+        <DialogFooter className="p-4 border-t bg-card shrink-0 flex justify-center! items-center!">
           <Controller
             name="isAgree"
             control={control}

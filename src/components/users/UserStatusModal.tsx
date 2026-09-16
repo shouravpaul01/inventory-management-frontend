@@ -48,8 +48,8 @@ export default function UserStatusModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <ShieldAlert className="size-5 text-amber-500" />
             Manage Account Status
@@ -63,7 +63,7 @@ export default function UserStatusModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 py-2">
+        <div className="flex-1 overflow-y-auto p-5 space-y-3">
           <div className="grid grid-cols-3 gap-2">
             {(["ACTIVE", "INACTIVE", "SUSPENDED"] as TUserStatus[]).map((s) => (
               <button
@@ -95,7 +95,7 @@ export default function UserStatusModal({
           </p>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="p-4 border-t bg-card shrink-0">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

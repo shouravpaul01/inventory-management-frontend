@@ -91,8 +91,8 @@ export default function StockLocationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle>Add Stock Storage Unit / Shelf</DialogTitle>
           <DialogDescription>
             Define an exact physical shelf, cabinet, or bin where inventory units and
@@ -101,60 +101,62 @@ export default function StockLocationModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
-            <FormInput
-              name="name"
-              label="Location / Shelf Name"
-              placeholder="e.g. Component Rack 3, Optics Cabinet A"
-              disabled={isLoading}
-              required
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <FormInput
-                name="code"
-                label="Location Code"
-                placeholder="e.g. RCK-03, CAB-A"
+                name="name"
+                label="Location / Shelf Name"
+                placeholder="e.g. Component Rack 3, Optics Cabinet A"
                 disabled={isLoading}
                 required
               />
 
-              <FormSelect
-                name="type"
-                label="Storage Type"
-                options={typeOptions}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormInput
+                  name="code"
+                  label="Location Code"
+                  placeholder="e.g. RCK-03, CAB-A"
+                  disabled={isLoading}
+                  required
+                />
+
+                <FormSelect
+                  name="type"
+                  label="Storage Type"
+                  options={typeOptions}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormSelect
+                  name="buildingId"
+                  label="Building (Optional)"
+                  placeholder="Select Building"
+                  options={[{ value: "", label: "None" }, ...buildingOptions]}
+                  disabled={isLoading}
+                />
+
+                <FormSelect
+                  name="roomId"
+                  label="Room / Lab (Optional)"
+                  placeholder="Select Room"
+                  options={[{ value: "", label: "None" }, ...roomOptions]}
+                  disabled={isLoading}
+                />
+              </div>
+
+              <FormTextarea
+                name="description"
+                label="Description (Optional)"
+                placeholder="Shelf level, access key required, or storage instructions"
                 disabled={isLoading}
-                required
+                rows={2}
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <FormSelect
-                name="buildingId"
-                label="Building (Optional)"
-                placeholder="Select Building"
-                options={[{ value: "", label: "None" }, ...buildingOptions]}
-                disabled={isLoading}
-              />
-
-              <FormSelect
-                name="roomId"
-                label="Room / Lab (Optional)"
-                placeholder="Select Room"
-                options={[{ value: "", label: "None" }, ...roomOptions]}
-                disabled={isLoading}
-              />
-            </div>
-
-            <FormTextarea
-              name="description"
-              label="Description (Optional)"
-              placeholder="Shelf level, access key required, or storage instructions"
-              disabled={isLoading}
-              rows={2}
-            />
-
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

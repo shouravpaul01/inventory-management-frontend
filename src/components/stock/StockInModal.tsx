@@ -111,19 +111,20 @@ export default function StockInModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-emerald-600">
             <PlusCircle className="size-5" />
             Stock In (Intake / Purchase)
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             Record newly received goods, purchase deliveries, or baseline inventory.
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
             <FormSelect
               name="inventoryItemId"
               label="Inventory Item"
@@ -191,7 +192,9 @@ export default function StockInModal({
               </div>
             </div>
 
-            <DialogFooter className="pt-4">
+            </div>
+
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

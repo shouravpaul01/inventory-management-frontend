@@ -210,22 +210,23 @@ export default function InventoryPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
             <DialogTitle className="text-destructive flex items-center gap-2">
               <Package className="size-5" />
               Confirm Item Deletion
             </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete{" "}
-              <strong className="text-foreground">
-                "{itemToDelete?.name}"
-              </strong>
-              ? If units or active transactions exist, deletion will be blocked by system constraints.
-            </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="pt-2">
+          <div className="flex-1 overflow-y-auto p-5 text-xs text-muted-foreground">
+            Are you sure you want to delete{" "}
+            <strong className="text-foreground">
+              "{itemToDelete?.name}"
+            </strong>
+            ? If units or active transactions exist, deletion will be blocked by system constraints.
+          </div>
+
+          <DialogFooter className="p-4 border-t bg-card shrink-0">
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}

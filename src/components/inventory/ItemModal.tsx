@@ -183,13 +183,13 @@ export default function ItemModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Package className="size-5 text-primary" />
             {isEdit ? "Edit Inventory Item" : "Catalog New Inventory Item"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             {isEdit
               ? "Update item details, replenishment thresholds, and issuance policies."
               : "Register a consumable or asset item into the institutional inventory catalog."}
@@ -197,7 +197,8 @@ export default function ItemModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormInput
                 name="name"
@@ -306,7 +307,9 @@ export default function ItemModal({
               rows={2}
             />
 
-            <DialogFooter className="pt-2">
+            </div>
+
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

@@ -342,15 +342,15 @@ export default function ApprovalPolicyModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[92vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
             <ShieldCheck className="size-5 text-primary" />
             {isEditing
               ? "Edit Approval Policy / Exemption"
               : "Configure Approval Policy & Exemption"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs">
             {isEditing
               ? "Update rule configuration, target person or role, and selected actions."
               : "Configure institutional governance. Select multiple actions and designate which specific person or role is exempted from Super Admin sign-off, or enforce strict multi-tier review."}
@@ -358,7 +358,8 @@ export default function ApprovalPolicyModal({
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 py-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
             {/* 1. Requirement Type */}
             <FormRadioGroup
               name="requirement"
@@ -583,7 +584,9 @@ export default function ApprovalPolicyModal({
               </div>
             )}
 
-            <DialogFooter className="pt-3 border-t">
+            </div>
+
+            <DialogFooter className="p-4 border-t bg-card shrink-0">
               <Button
                 type="button"
                 variant="outline"

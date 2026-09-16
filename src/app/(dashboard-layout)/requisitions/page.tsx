@@ -281,22 +281,23 @@ export default function RequisitionsPage() {
 
       {/* Delete / Cancel Confirmation */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden flex flex-col max-h-[90vh]">
+          <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
             <DialogTitle className="text-destructive flex items-center gap-2">
               <Trash2 className="size-5" />
               Cancel Draft Requisition
             </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete draft requisition{" "}
-              <strong className="text-foreground">
-                "{requisitionToDelete?.requestNumber || requisitionToDelete?.requisitionNo}"
-              </strong>
-              ? This action cannot be undone.
-            </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="pt-2">
+          <div className="flex-1 overflow-y-auto p-5 text-xs text-muted-foreground">
+            Are you sure you want to delete draft requisition{" "}
+            <strong className="text-foreground">
+              "{requisitionToDelete?.requestNumber || requisitionToDelete?.requisitionNo}"
+            </strong>
+            ? This action cannot be undone.
+          </div>
+
+          <DialogFooter className="p-4 border-t bg-card shrink-0">
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
