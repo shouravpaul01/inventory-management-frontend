@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Bell,
   CheckCheck,
@@ -10,15 +11,13 @@ import {
   AlertTriangle,
   Info,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -30,20 +29,49 @@ import {
 import { TNotification, TNotificationType } from "@/type";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function NotificationDropdown() {
   const router = useRouter();
-  const { data: countData } = useGetUnreadNotificationCountQuery(undefined, {
+  const { token } = useCurrentUser();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const {
+    data: countData,
+    refetch: refetchCount,
+  } = useGetUnreadNotificationCountQuery(undefined, {
+    skip: !token,
     pollingInterval: 30000,
+    refetchOnMountOrArgChange: true,
   });
   const unreadCount = countData?.data?.unreadCount || 0;
 
-  const { data: notifData } = useGetMyNotificationsQuery({ limit: 5 });
-  const recentNotifications = notifData?.data || [];
+  const {
+    data: notifData,
+    isLoading: isNotifLoading,
+    refetch: refetchNotifications,
+  } = useGetMyNotificationsQuery(
+    { limit: 5, sortBy: "createdAt", sortOrder: "desc" },
+    {
+      skip: !token,
+      pollingInterval: 30000,
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const recentNotifications = Array.isArray(notifData?.data) ? notifData.data : [];
 
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead, { isLoading: isMarkingAll }] =
     useMarkAllNotificationsAsReadMutation();
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open && token) {
+      refetchNotifications();
+      refetchCount();
+    }
+  };
 
   const getNotificationIcon = (type: TNotificationType) => {
     switch (type) {
@@ -68,6 +96,7 @@ export default function NotificationDropdown() {
   };
 
   const handleNotificationClick = async (notif: TNotification) => {
+    setIsOpen(false);
     if (!notif.isRead) {
       await markAsRead(notif.id).unwrap().catch(() => {});
     }
@@ -82,11 +111,13 @@ export default function NotificationDropdown() {
       router.push("/distributions");
     } else if (notif.referenceType === "ReturnTransaction") {
       router.push("/returns");
+    } else {
+      router.push("/notifications");
     }
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -103,7 +134,7 @@ export default function NotificationDropdown() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-80 p-0 shadow-lg">
+      <DropdownMenuContent align="end" className="w-80 sm:w-88 p-0 shadow-lg">
         <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center gap-1.5">
             <span className="font-semibold text-xs text-foreground">Notifications</span>
@@ -129,7 +160,12 @@ export default function NotificationDropdown() {
         </div>
 
         <div className="max-h-80 overflow-y-auto divide-y divide-border/40">
-          {recentNotifications.length === 0 ? (
+          {isNotifLoading && !notifData ? (
+            <div className="p-8 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Loader2 className="size-4 animate-spin text-primary" />
+              <span>Loading notifications...</span>
+            </div>
+          ) : recentNotifications.length === 0 ? (
             <div className="p-6 text-center text-xs text-muted-foreground">
               No recent notifications.
             </div>
@@ -177,7 +213,11 @@ export default function NotificationDropdown() {
         </div>
 
         <div className="p-2 border-t text-center bg-muted/20">
-          <Link href="/notifications" className="block text-xs font-medium text-primary hover:underline py-1">
+          <Link
+            href="/notifications"
+            onClick={() => setIsOpen(false)}
+            className="block text-xs font-medium text-primary hover:underline py-1"
+          >
             View All Notifications
           </Link>
         </div>
