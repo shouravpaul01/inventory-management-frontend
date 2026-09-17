@@ -11,7 +11,7 @@ import DistributionTable from "@/components/distributions/DistributionTable";
 import DistributionModal from "@/components/distributions/DistributionModal";
 import DeliveryConfirmModal from "@/components/distributions/DeliveryConfirmModal";
 import DistributionDetailsModal from "@/components/distributions/DistributionDetailsModal";
-import { Card } from "@/components/ui/card";
+import StatCard from "@/components/shared/StatCard";
 import { useGetDistributionsQuery } from "@/redux/api/distributionApi";
 import { usePermission } from "@/hooks/usePermission";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -93,39 +93,29 @@ export default function DistributionsPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <SendHorizontal className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Total Dispatches</p>
-            <p className="text-xl font-bold text-foreground">{meta.total}</p>
-          </div>
-        </Card>
+        <StatCard
+          title="Total Dispatches"
+          value={meta.total}
+          icon={SendHorizontal}
+          variant="primary"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 shrink-0">
-            <CheckCircle2 className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Confirmed Received</p>
-            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              {receivedCount}
-            </p>
-          </div>
-        </Card>
+        <StatCard
+          title="Confirmed Received"
+          value={receivedCount}
+          icon={CheckCircle2}
+          variant="emerald"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-600 shrink-0">
-            <Clock className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Pending Recipient Sign-Off</p>
-            <p className="text-xl font-bold text-amber-700 dark:text-amber-400">
-              {pendingCount}
-            </p>
-          </div>
-        </Card>
+        <StatCard
+          title="Pending Recipient Sign-Off"
+          value={pendingCount}
+          icon={Clock}
+          variant="amber"
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Filters Bar */}

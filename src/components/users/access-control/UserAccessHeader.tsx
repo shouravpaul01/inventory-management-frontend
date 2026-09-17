@@ -152,10 +152,10 @@ export default function UserAccessHeader({
 
         {/* Mode Switcher Tabs Navigation */}
         <div className="w-full mt-4 pt-3 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <TabsList className="h-10 bg-muted/70 p-1 rounded-xl border border-border/70 shadow-2xs gap-1">
+          <TabsList className="tab-list-primary">
             <TabsTrigger
               value="ROLES"
-              className="h-8 px-4 text-xs font-semibold gap-2 rounded-lg transition-all text-muted-foreground hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs"
+              className="tab-trigger-primary"
             >
               <KeyRound className="size-3.5 shrink-0" />
               <span>1. Institutional Roles</span>
@@ -164,7 +164,7 @@ export default function UserAccessHeader({
                 className={cn(
                   "text-[10px] py-0 px-1.5 h-4 ml-0.5 font-mono transition-colors",
                   activeTab === "ROLES"
-                    ? "bg-primary-foreground/25 text-primary-foreground border-transparent"
+                    ? "tab-badge-primary-active"
                     : "bg-muted text-muted-foreground"
                 )}
               >
@@ -177,7 +177,7 @@ export default function UserAccessHeader({
 
             <TabsTrigger
               value="OVERRIDES"
-              className="h-8 px-4 text-xs font-semibold gap-2 rounded-lg transition-all text-muted-foreground hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs"
+              className="tab-trigger-primary"
             >
               <SlidersHorizontal className="size-3.5 shrink-0" />
               <span>2. Capability Overrides</span>
@@ -187,7 +187,7 @@ export default function UserAccessHeader({
                   className={cn(
                     "text-[10px] py-0 px-1.5 h-4 ml-0.5 font-mono transition-colors",
                     activeTab === "OVERRIDES"
-                      ? "bg-primary-foreground/25 text-primary-foreground border-transparent"
+                      ? "tab-badge-primary-active"
                       : "bg-primary/10 text-primary border-primary/20"
                   )}
                 >
@@ -201,7 +201,7 @@ export default function UserAccessHeader({
 
             <TabsTrigger
               value="MATRIX"
-              className="h-8 px-3.5 text-xs font-semibold gap-2 rounded-lg transition-all text-muted-foreground hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs"
+              className="tab-trigger-primary"
             >
               <Eye className="size-3.5 shrink-0" />
               <span className="hidden sm:inline">3. Effective Matrix</span>
@@ -211,7 +211,7 @@ export default function UserAccessHeader({
                 className={cn(
                   "text-[10px] py-0 px-1.5 h-4 ml-0.5 font-mono transition-colors",
                   activeTab === "MATRIX"
-                    ? "bg-primary-foreground/25 text-primary-foreground border-transparent"
+                    ? "tab-badge-primary-active"
                     : "bg-muted text-muted-foreground"
                 )}
               >

@@ -177,3 +177,18 @@
 .container {
   @apply max-w-7xl mx-auto px-5;
 }
+
+/* ============================================================ */
+/* CUSTOM TAB UTILITY CLASSES                                   */
+/* ============================================================ */
+
+.tab-list-primary {
+  @apply h-12! bg-muted/60 p-1 rounded-xl border border-border/70 shadow-2xs inline-flex items-center gap-1;
+}
+
+.tab-trigger-primary {
+  @apply h-full! px-4 text-xs font-semibold gap-2 rounded-lg transition-all text-muted-foreground hover:text-foreground cursor-pointer;
+  @apply data-[state=active]:bg-primary! data-[state=active]:text-white! data-[state=active]:shadow-xs;
+}
+
+

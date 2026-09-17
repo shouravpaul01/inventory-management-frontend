@@ -23,7 +23,7 @@ import StockInModal from "@/components/stock/StockInModal";
 import StockOutModal from "@/components/stock/StockOutModal";
 import StockTransferModal from "@/components/stock/StockTransferModal";
 import StockAdjustModal from "@/components/stock/StockAdjustModal";
-import { Card, CardContent } from "@/components/ui/card";
+import StatCard from "@/components/shared/StatCard";
 import { useGetStockBalancesQuery } from "@/redux/api/stockApi";
 import { useGetItemsQuery } from "@/redux/api/itemApi";
 import { useGetStockLocationsQuery } from "@/redux/api/locationApi";
@@ -146,47 +146,37 @@ export default function StockBalancesPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <Boxes className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Active Stock Lines</p>
-            <p className="text-xl font-bold text-foreground">{meta.total}</p>
-          </div>
-        </Card>
+        <StatCard
+          title="Active Stock Lines"
+          value={meta.total}
+          icon={Boxes}
+          variant="primary"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 shrink-0">
-            <CheckCircle2 className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Total Available Units</p>
-            <p className="text-xl font-bold text-foreground">{totalAvailable}</p>
-          </div>
-        </Card>
+        <StatCard
+          title="Total Available Units"
+          value={totalAvailable}
+          icon={CheckCircle2}
+          variant="emerald"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-600 shrink-0">
-            <AlertTriangle className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Low Stock Alerts</p>
-            <p className="text-xl font-bold text-amber-700 dark:text-amber-400">
-              {lowStockCount}
-            </p>
-          </div>
-        </Card>
+        <StatCard
+          title="Low Stock Alerts"
+          value={lowStockCount}
+          icon={AlertTriangle}
+          variant="amber"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 shrink-0">
-            <MapPin className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Stock Locations</p>
-            <p className="text-xl font-bold text-foreground">{locations.length}</p>
-          </div>
-        </Card>
+        <StatCard
+          title="Stock Locations"
+          value={locations.length}
+          icon={MapPin}
+          variant="sky"
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Filter Bar */}

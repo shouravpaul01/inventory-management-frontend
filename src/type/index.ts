@@ -8,6 +8,17 @@ export type TMeta = {
   limit: number;
   total: number;
   totalPage: number;
+  pendingCount?: number;
+  approvedCount?: number;
+  rejectedCount?: number;
+  cancelledCount?: number;
+  stats?: {
+    pending: number;
+    approved: number;
+    rejected: number;
+    cancelled?: number;
+    total: number;
+  };
 };
 
 export type TApiResponse<T> = {

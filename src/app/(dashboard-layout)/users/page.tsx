@@ -361,22 +361,18 @@ export default function UsersPage() {
           </div>
 
           {/* Quick Overrides Toggle Pill */}
-          <button
+          <Button
             type="button"
+            variant={"outline"}
             onClick={() => {
               setOverridesOnly((prev) => !prev);
               setPage(1);
             }}
-            className={cn(
-              "text-xs font-medium px-3 py-2 rounded-lg border flex items-center gap-1.5 transition-colors shrink-0",
-              overridesOnly
-                ? "bg-primary text-primary-foreground border-primary shadow-xs"
-                : "bg-background text-muted-foreground border-border hover:bg-muted/60 hover:text-foreground"
-            )}
+           
           >
             <Sparkles className="size-3.5" />
             <span>Overrides Only</span>
-          </button>
+          </Button>
 
           {isFiltered && (
             <Button

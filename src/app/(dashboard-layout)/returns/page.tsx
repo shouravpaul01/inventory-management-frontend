@@ -10,7 +10,7 @@ import Pagination from "@/components/shared/Pagination";
 import ReturnTable from "@/components/returns/ReturnTable";
 import ReturnModal from "@/components/returns/ReturnModal";
 import ReturnDetailsModal from "@/components/returns/ReturnDetailsModal";
-import { Card } from "@/components/ui/card";
+import StatCard from "@/components/shared/StatCard";
 import { useGetReturnsQuery } from "@/redux/api/returnApi";
 import { usePermission } from "@/hooks/usePermission";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -79,39 +79,29 @@ export default function ReturnsPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-            <RotateCcw className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Total Returns Processed</p>
-            <p className="text-xl font-bold text-foreground">{meta.total}</p>
-          </div>
-        </Card>
+        <StatCard
+          title="Total Returns Processed"
+          value={meta.total}
+          icon={RotateCcw}
+          variant="primary"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 shrink-0">
-            <CheckCircle2 className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Restocked to Inventory</p>
-            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-              {returnedCount}
-            </p>
-          </div>
-        </Card>
+        <StatCard
+          title="Restocked to Inventory"
+          value={returnedCount}
+          icon={CheckCircle2}
+          variant="emerald"
+          isLoading={isLoading}
+        />
 
-        <Card className="p-4 flex items-center gap-4 shadow-xs">
-          <div className="size-10 rounded-lg bg-rose-100 dark:bg-rose-950 flex items-center justify-center text-rose-600 shrink-0">
-            <AlertTriangle className="size-5" />
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground font-medium">Overdue / Damaged</p>
-            <p className="text-xl font-bold text-rose-600 dark:text-rose-400">
-              {overdueCount}
-            </p>
-          </div>
-        </Card>
+        <StatCard
+          title="Overdue / Damaged"
+          value={overdueCount}
+          icon={AlertTriangle}
+          variant="rose"
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Filters Bar */}

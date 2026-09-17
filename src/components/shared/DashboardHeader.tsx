@@ -1,6 +1,13 @@
 "use client";
 
-import { Bell, ChevronDown, KeyRound, LogOut, ShieldCheck, User } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  KeyRound,
+  LogOut,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -31,7 +38,9 @@ export default function DashboardHeader() {
 
   const handleLogout = async () => {
     try {
-      await logoutApi().unwrap().catch(() => {});
+      await logoutApi()
+        .unwrap()
+        .catch(() => {});
     } finally {
       dispatch(logout());
       toast.success("Logged out successfully 👋");
@@ -57,13 +66,8 @@ export default function DashboardHeader() {
 
         <div className="flex items-center gap-2">
           {department ? (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {department.name}
-              </span>
-              <span className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-muted">
-                {department.code}
-              </span>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="font-semibold text-foreground">Wellcome</span>
             </div>
           ) : isSuperAdmin ? (
             <Badge variant="secondary" className="text-xs font-normal gap-1">
@@ -126,14 +130,20 @@ export default function DashboardHeader() {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem asChild>
-              <Link href="/profile" className="cursor-pointer flex items-center">
+              <Link
+                href="/profile"
+                className="cursor-pointer flex items-center"
+              >
                 <User className="mr-2 size-4" />
                 <span>My Profile</span>
               </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
-              <Link href="/profile/password" className="cursor-pointer flex items-center">
+              <Link
+                href="/profile/password"
+                className="cursor-pointer flex items-center"
+              >
                 <KeyRound className="mr-2 size-4" />
                 <span>Change Password</span>
               </Link>
