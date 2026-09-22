@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, QrCode, Search, ScanBarcode, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
+import { Plus, QrCode, Search, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SectionHeader from "@/components/shared/SectionHeader";
@@ -83,7 +83,7 @@ export default function InventoryUnitsPage() {
   const handleLookup = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!lookupCode.trim()) {
-      toast.error("Please enter a QR code, barcode, or unique unit tag to lookup.");
+      toast.error("Please enter a QR code, serial number, or asset code to lookup.");
       return;
     }
 
@@ -112,7 +112,7 @@ export default function InventoryUnitsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <SectionHeader
           title="Asset Units (Serialized)"
-          description="Manage individual physical inventory items, unique asset tags, serial numbers, barcodes, condition & locations."
+          description="Manage individual physical inventory items, unique asset tags, serial numbers, condition & locations."
         />
 
         {can("inventory_unit.create") && (
@@ -126,17 +126,17 @@ export default function InventoryUnitsPage() {
         )}
       </div>
 
-      {/* Barcode / Quick Lookup Card */}
+      {/* Quick Lookup Card */}
       <Card className="border-dashed bg-muted/20 shadow-none">
         <CardContent className="p-4 sm:p-5">
           <form onSubmit={handleLookup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground whitespace-nowrap">
-              <ScanBarcode className="size-4 text-primary" />
+              <QrCode className="size-4 text-primary" />
               <span>Asset Lookup:</span>
             </div>
             <div className="relative flex-1">
               <Input
-                placeholder="Scan or paste Barcode, Serial #, or Unique Code (e.g. IT-LAP-0001)..."
+                placeholder="Scan QR code, enter Serial #, or Asset Code (e.g. AST-0001)..."
                 value={lookupCode}
                 onChange={(e) => setLookupCode(e.target.value)}
                 className="h-9 pr-9"
@@ -187,9 +187,6 @@ export default function InventoryUnitsPage() {
                   {scannedUnit.serialNumber && (
                     <span>SN: <span className="font-mono">{scannedUnit.serialNumber}</span></span>
                   )}
-                  {scannedUnit.barcode && (
-                    <span>Barcode: <span className="font-mono">{scannedUnit.barcode}</span></span>
-                  )}
                   <span>Condition: <strong>{scannedUnit.condition}</strong></span>
                   {scannedUnit.location && (
                     <span>Location: <strong>{scannedUnit.location.name}</strong></span>
@@ -214,7 +211,7 @@ export default function InventoryUnitsPage() {
       <div className="flex flex-col lg:flex-row gap-3">
         <div className="flex-1">
           <SearchInput
-            placeholder="Search by tag, serial number, barcode..."
+            placeholder="Search by asset code, serial number..."
             value={searchTerm}
             onChange={(val) => {
               setSearchTerm(val);

@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { Loader2, ArrowRightLeft, Upload } from "lucide-react";
 import { TStockBalance } from "@/type";
 import { handleMutationResult } from "@/lib/notifyMutation";
+import SerializedUnitPicker from "./SerializedUnitPicker";
 
 interface StockTransferModalProps {
   open: boolean;
@@ -37,6 +38,7 @@ export default function StockTransferModal({
 }: StockTransferModalProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
 
   const { data: itemsData } = useGetItemsQuery({ limit: 100 });
   const items = itemsData?.data || [];
@@ -48,7 +50,7 @@ export default function StockTransferModal({
 
   const itemOptions = items.map((item) => ({
     value: item.id,
-    label: `${item.name} (${item.code})`,
+    label: `${item.name} (${item.code})${item.isReturnable ? " [Returnable]" : ""}${item.trackingType === "SERIALIZED" ? " [Serialized]" : ""}`,
   }));
 
   const locationOptions = locations.map((loc) => ({
@@ -66,12 +68,19 @@ export default function StockTransferModal({
       notes: "",
     },
   });
-  const { reset } = methods;
+  const { reset, watch, setValue } = methods;
+
+  const watchItemId = watch("inventoryItemId");
+  const watchFromLocationId = watch("fromLocationId");
+
+  const selectedItem = items.find((i) => i.id === watchItemId);
+  const isSerialized = selectedItem?.trackingType === "SERIALIZED" || Boolean(selectedItem?.isReturnable);
 
   useEffect(() => {
     if (!open) {
       setSelectedPhoto(null);
       setPhotoPreview(null);
+      setSelectedUnitIds([]);
       return;
     }
     if (defaultBalance) {
@@ -82,8 +91,21 @@ export default function StockTransferModal({
         quantity: 1,
         notes: "",
       });
+      setSelectedUnitIds([]);
     }
   }, [defaultBalance?.id, open, reset]);
+
+  // Reset selected unit IDs if item or source location changes
+  useEffect(() => {
+    setSelectedUnitIds([]);
+  }, [watchItemId, watchFromLocationId]);
+
+  // Sync quantity form value with selected units count when serialized
+  useEffect(() => {
+    if (isSerialized) {
+      setValue("quantity", selectedUnitIds.length > 0 ? selectedUnitIds.length : 1);
+    }
+  }, [isSerialized, selectedUnitIds, setValue]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -99,18 +121,26 @@ export default function StockTransferModal({
       return;
     }
 
+    if (isSerialized && selectedUnitIds.length === 0) {
+      toast.error("Please select at least one serialized unit code to transfer.");
+      return;
+    }
+
     try {
+      const payloadData: any = {
+        inventoryItemId: values.inventoryItemId,
+        fromLocationId: values.fromLocationId,
+        toLocationId: values.toLocationId,
+        quantity: isSerialized ? selectedUnitIds.length : Number(values.quantity),
+        notes: values.notes || undefined,
+      };
+
+      if (isSerialized && selectedUnitIds.length > 0) {
+        payloadData.unitIds = selectedUnitIds;
+      }
+
       const formData = new FormData();
-      formData.append(
-        "data",
-        JSON.stringify({
-          inventoryItemId: values.inventoryItemId,
-          fromLocationId: values.fromLocationId,
-          toLocationId: values.toLocationId,
-          quantity: Number(values.quantity),
-          notes: values.notes || undefined,
-        })
-      );
+      formData.append("data", JSON.stringify(payloadData));
       if (selectedPhoto) {
         formData.append("photo", selectedPhoto);
       }
@@ -120,6 +150,7 @@ export default function StockTransferModal({
       methods.reset();
       setSelectedPhoto(null);
       setPhotoPreview(null);
+      setSelectedUnitIds([]);
       onOpenChange(false);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to transfer stock");
@@ -142,74 +173,84 @@ export default function StockTransferModal({
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            <FormSelect
-              name="inventoryItemId"
-              label="Inventory Item"
-              placeholder="Select an item"
-              options={itemOptions}
-              required
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormSelect
-                name="fromLocationId"
-                label="From (Source Location)"
-                placeholder="Source location"
-                options={locationOptions}
+                name="inventoryItemId"
+                label="Inventory Item"
+                placeholder="Select an item"
+                options={itemOptions}
                 required
               />
 
-              <FormSelect
-                name="toLocationId"
-                label="To (Destination Location)"
-                placeholder="Destination location"
-                options={locationOptions}
-                required
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormSelect
+                  name="fromLocationId"
+                  label="From (Source Location)"
+                  placeholder="Source location"
+                  options={locationOptions}
+                  required
+                />
 
-            <FormInput
-              name="quantity"
-              label="Transfer Quantity"
-              type="number"
-              placeholder="e.g. 10"
-              required
-            />
-
-            <FormTextarea
-              name="notes"
-              label="Transfer Remarks (Optional)"
-              placeholder="Reason for movement, authorized personnel, or gate pass details..."
-            />
-
-            {/* Photo / Transfer Gate Pass Upload */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-foreground">
-                Attachment (Gate Pass / Handover Slip)
-              </label>
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-2 px-3 py-2 border rounded-md border-dashed cursor-pointer hover:bg-muted/50 text-xs text-muted-foreground transition-colors">
-                  <Upload className="size-4" />
-                  <span>{selectedPhoto ? selectedPhoto.name : "Upload image"}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoChange}
-                  />
-                </label>
-                {photoPreview && (
-                  <div className="relative size-10 rounded border overflow-hidden shrink-0">
-                    <img
-                      src={photoPreview}
-                      alt="Preview"
-                      className="size-full object-cover"
-                    />
-                  </div>
-                )}
+                <FormSelect
+                  name="toLocationId"
+                  label="To (Destination Location)"
+                  placeholder="Destination location"
+                  options={locationOptions}
+                  required
+                />
               </div>
-            </div>
 
+              {/* Serialized Unit Picker vs Bulk Quantity */}
+              {isSerialized ? (
+                <SerializedUnitPicker
+                  inventoryItemId={watchItemId}
+                  locationId={watchFromLocationId}
+                  selectedUnitIds={selectedUnitIds}
+                  onChange={setSelectedUnitIds}
+                  actionLabel="transfer"
+                />
+              ) : (
+                <FormInput
+                  name="quantity"
+                  label="Transfer Quantity"
+                  type="number"
+                  placeholder="e.g. 10"
+                  required
+                />
+              )}
+
+              <FormTextarea
+                name="notes"
+                label="Transfer Remarks (Optional)"
+                placeholder="Reason for movement, authorized personnel, or gate pass details..."
+              />
+
+              {/* Photo / Transfer Gate Pass Upload */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-foreground">
+                  Attachment (Gate Pass / Handover Slip)
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 px-3 py-2 border rounded-md border-dashed cursor-pointer hover:bg-muted/50 text-xs text-muted-foreground transition-colors">
+                    <Upload className="size-4" />
+                    <span>{selectedPhoto ? selectedPhoto.name : "Upload image"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
+                  {photoPreview && (
+                    <div className="relative size-10 rounded border overflow-hidden shrink-0">
+                      <img
+                        src={photoPreview}
+                        alt="Preview"
+                        className="size-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <DialogFooter className="p-4 border-t bg-card shrink-0">
@@ -223,11 +264,11 @@ export default function StockTransferModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || (isSerialized && selectedUnitIds.length === 0)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Confirm Transfer
+                Confirm Transfer {isSerialized && selectedUnitIds.length > 0 ? `(${selectedUnitIds.length} units)` : ""}
               </Button>
             </DialogFooter>
           </form>
@@ -236,3 +277,4 @@ export default function StockTransferModal({
     </Dialog>
   );
 }
+

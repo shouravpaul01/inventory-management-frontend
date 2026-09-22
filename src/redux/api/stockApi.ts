@@ -76,7 +76,7 @@ export const stockApi = baseApi.injectEndpoints({
           body: finalBody,
         };
       },
-      invalidatesTags: ["Stock", "StockLedger", "InventoryItem"],
+      invalidatesTags: ["Stock", "StockLedger", "InventoryItem", "InventoryUnit"],
     }),
 
     stockOut: builder.mutation<
@@ -96,7 +96,7 @@ export const stockApi = baseApi.injectEndpoints({
           body: finalBody,
         };
       },
-      invalidatesTags: ["Stock", "StockLedger", "InventoryItem"],
+      invalidatesTags: ["Stock", "StockLedger", "InventoryItem", "InventoryUnit"],
     }),
 
     transferStock: builder.mutation<

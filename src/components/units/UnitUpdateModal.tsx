@@ -53,7 +53,6 @@ export default function UnitUpdateModal({
     resolver: zodResolver(updateUnitSchema),
     defaultValues: {
       serialNumber: "",
-      barcode: "",
       condition: "GOOD",
       locationId: "",
       warrantyEndDate: "",
@@ -67,7 +66,6 @@ export default function UnitUpdateModal({
     if (unit) {
       reset({
         serialNumber: unit.serialNumber || "",
-        barcode: unit.barcode || "",
         condition: unit.condition || "GOOD",
         locationId: unit.locationId || "",
         warrantyEndDate: unit.warrantyEndDate || "",
@@ -83,7 +81,6 @@ export default function UnitUpdateModal({
         id: unit.id,
         body: {
           serialNumber: data.serialNumber?.trim() || undefined,
-          barcode: data.barcode?.trim() || undefined,
           condition: data.condition,
           locationId: data.locationId || undefined,
           warrantyEndDate: data.warrantyEndDate || undefined,
@@ -114,20 +111,12 @@ export default function UnitUpdateModal({
         <FormProvider {...methods}>
           <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormInput
                 name="serialNumber"
-                label="Serial Number"
+                label="Manufacturer Serial Number"
                 placeholder="e.g. SN-89240192A"
                 disabled={isLoading}
               />
-              <FormInput
-                name="barcode"
-                label="Barcode / RFID Tag"
-                placeholder="e.g. 1049283749"
-                disabled={isLoading}
-              />
-            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormSelect

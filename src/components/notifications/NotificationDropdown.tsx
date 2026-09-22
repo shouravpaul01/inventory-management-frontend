@@ -36,14 +36,12 @@ export default function NotificationDropdown() {
   const { token } = useCurrentUser();
   const [isOpen, setIsOpen] = useState(false);
 
-  const {
-    data: countData,
-    refetch: refetchCount,
-  } = useGetUnreadNotificationCountQuery(undefined, {
-    skip: !token,
-    pollingInterval: 30000,
-    refetchOnMountOrArgChange: true,
-  });
+  const { data: countData, refetch: refetchCount } =
+    useGetUnreadNotificationCountQuery(undefined, {
+      skip: !token,
+      pollingInterval: 30000,
+      refetchOnMountOrArgChange: true,
+    });
   const unreadCount = countData?.data?.unreadCount || 0;
 
   const {
@@ -56,10 +54,12 @@ export default function NotificationDropdown() {
       skip: !token,
       pollingInterval: 30000,
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
-  const recentNotifications = Array.isArray(notifData?.data) ? notifData.data : [];
+  const recentNotifications = Array.isArray(notifData?.data)
+    ? notifData.data
+    : [];
 
   const [markAsRead] = useMarkNotificationAsReadMutation();
   const [markAllAsRead, { isLoading: isMarkingAll }] =
@@ -98,7 +98,9 @@ export default function NotificationDropdown() {
   const handleNotificationClick = async (notif: TNotification) => {
     setIsOpen(false);
     if (!notif.isRead) {
-      await markAsRead(notif.id).unwrap().catch(() => {});
+      await markAsRead(notif.id)
+        .unwrap()
+        .catch(() => {});
     }
 
     if (notif.link) {
@@ -125,7 +127,7 @@ export default function NotificationDropdown() {
           className="relative size-9 text-muted-foreground hover:text-foreground"
           aria-label="View notifications"
         >
-          <Bell className="size-4" />
+          <Bell className="size-6" />
           {unreadCount > 0 && (
             <span className="absolute top-1 right-1 flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none animate-in zoom-in-50">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -137,9 +139,14 @@ export default function NotificationDropdown() {
       <DropdownMenuContent align="end" className="w-80 sm:w-88 p-0 shadow-lg">
         <div className="flex items-center justify-between p-3 border-b">
           <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-xs text-foreground">Notifications</span>
+            <span className="font-semibold text-xs text-foreground">
+              Notifications
+            </span>
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+              <Badge
+                variant="secondary"
+                className="text-[10px] px-1.5 py-0 h-4"
+              >
                 {unreadCount} new
               </Badge>
             )}
@@ -149,7 +156,11 @@ export default function NotificationDropdown() {
             <Button
               variant="ghost"
               size="xs"
-              onClick={() => markAllAsRead().unwrap().catch(() => {})}
+              onClick={() =>
+                markAllAsRead()
+                  .unwrap()
+                  .catch(() => {})
+              }
               disabled={isMarkingAll}
               className="text-[11px] text-muted-foreground hover:text-primary gap-1 h-6 px-1.5"
             >

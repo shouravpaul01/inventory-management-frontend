@@ -44,7 +44,7 @@ export default function LoginPage() {
               Intelligent Inventory & Requisition Management
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Streamline faculty requisitions, barcode-tracked asset allocations,
+              Streamline faculty requisitions, unique asset allocations,
               central store ledgers, and department approval workflows with
               full audit accountability.
             </p>
@@ -59,7 +59,7 @@ export default function LoginPage() {
             </div>
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 backdrop-blur">
               <QrCode className="size-5 text-indigo-400 mb-2" />
-              <div className="text-xs font-semibold text-white">Asset Barcode</div>
+              <div className="text-xs font-semibold text-white">Asset QR / Tag</div>
               <div className="text-[11px] text-slate-400">Unit Lifecycle</div>
             </div>
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 backdrop-blur">

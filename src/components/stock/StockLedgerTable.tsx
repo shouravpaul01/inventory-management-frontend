@@ -178,12 +178,19 @@ export default function StockLedgerTable({
                           <p className="font-medium text-xs text-foreground">
                             {item?.name || "Unknown Item"}
                           </p>
-                          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
                             <span className="font-mono">{item?.code}</span>
                             {unit && (
-                              <Badge variant="outline" className="font-mono text-[10px] px-1 py-0">
-                                Tag: {unit.uniqueCode}
-                              </Badge>
+                              <>
+                                <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 border-primary/30 bg-primary/5 text-primary font-semibold">
+                                  Tag: {unit.uniqueCode}
+                                </Badge>
+                                {unit.serialNumber && (
+                                  <Badge variant="secondary" className="font-mono text-[10px] px-1.5 py-0 text-muted-foreground">
+                                    SN: {unit.serialNumber}
+                                  </Badge>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>

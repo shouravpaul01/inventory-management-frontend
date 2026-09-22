@@ -4,11 +4,13 @@ import { useState } from "react";
 import {
   Building2,
   DoorOpen,
+  Layers,
   Archive,
   Plus,
   Trash2,
-  MoreHorizontal,
+  Pencil,
   MapPin,
+  PlusCircle,
 } from "lucide-react";
 import SectionHeader from "@/components/shared/SectionHeader";
 import SearchInput from "@/components/shared/SearchInput";
@@ -26,23 +28,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 
 import {
   useGetBuildingsQuery,
   useDeleteBuildingMutation,
+  useGetFloorsQuery,
+  useDeleteFloorMutation,
   useGetRoomsQuery,
   useDeleteRoomMutation,
   useGetStockLocationsQuery,
@@ -51,12 +48,14 @@ import {
 import { usePermission } from "@/hooks/usePermission";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
+import { TBuilding, TFloor } from "@/type";
 
 import BuildingModal from "@/components/locations/BuildingModal";
+import FloorModal from "@/components/locations/FloorModal";
 import RoomModal from "@/components/locations/RoomModal";
 import StockLocationModal from "@/components/locations/StockLocationModal";
 
-type TActiveTab = "units" | "rooms" | "buildings";
+type TActiveTab = "units" | "rooms" | "floors" | "buildings";
 
 export default function LocationsPage() {
   const { can } = usePermission();
@@ -70,6 +69,12 @@ export default function LocationsPage() {
 
   // Modals state
   const [buildingModalOpen, setBuildingModalOpen] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState<TBuilding | null>(null);
+
+  const [floorModalOpen, setFloorModalOpen] = useState(false);
+  const [selectedFloor, setSelectedFloor] = useState<TFloor | null>(null);
+  const [defaultBuildingIdForFloor, setDefaultBuildingIdForFloor] = useState<string | undefined>(undefined);
+
   const [roomModalOpen, setRoomModalOpen] = useState(false);
   const [stockLocationModalOpen, setStockLocationModalOpen] = useState(false);
 
@@ -78,7 +83,7 @@ export default function LocationsPage() {
   const [itemToDelete, setItemToDelete] = useState<{
     id: string;
     name: string;
-    type: "building" | "room" | "unit";
+    type: "building" | "floor" | "room" | "unit";
   } | null>(null);
 
   // Queries
@@ -95,6 +100,12 @@ export default function LocationsPage() {
       : undefined
   );
 
+  const { data: floorsData, isLoading: isLoadingFloors } = useGetFloorsQuery(
+    activeTab === "floors"
+      ? { searchTerm: debouncedSearch || undefined, page, limit }
+      : undefined
+  );
+
   const { data: buildingsData, isLoading: isLoadingBuildings } =
     useGetBuildingsQuery(
       activeTab === "buildings"
@@ -105,21 +116,33 @@ export default function LocationsPage() {
   // Delete Mutations
   const [deleteBuilding, { isLoading: isDeletingBuilding }] =
     useDeleteBuildingMutation();
+  const [deleteFloor, { isLoading: isDeletingFloor }] =
+    useDeleteFloorMutation();
   const [deleteRoom, { isLoading: isDeletingRoom }] = useDeleteRoomMutation();
   const [deleteStockLocation, { isLoading: isDeletingStockLocation }] =
     useDeleteStockLocationMutation();
 
   const isDeleting =
-    isDeletingBuilding || isDeletingRoom || isDeletingStockLocation;
+    isDeletingBuilding || isDeletingFloor || isDeletingRoom || isDeletingStockLocation;
 
   const stockLocations = stockLocationsData?.data || [];
   const rooms = roomsData?.data || [];
+  const floors = floorsData?.data || [];
   const buildings = buildingsData?.data || [];
+
+  const currentMeta =
+    activeTab === "units"
+      ? stockLocationsData?.meta
+      : activeTab === "rooms"
+      ? roomsData?.meta
+      : activeTab === "floors"
+      ? floorsData?.meta
+      : buildingsData?.meta;
 
   const handleOpenDelete = (
     id: string,
     name: string,
-    type: "building" | "room" | "unit"
+    type: "building" | "floor" | "room" | "unit"
   ) => {
     setItemToDelete({ id, name, type });
     setDeleteDialogOpen(true);
@@ -130,6 +153,8 @@ export default function LocationsPage() {
     try {
       if (itemToDelete.type === "building") {
         await deleteBuilding(itemToDelete.id).unwrap();
+      } else if (itemToDelete.type === "floor") {
+        await deleteFloor(itemToDelete.id).unwrap();
       } else if (itemToDelete.type === "room") {
         await deleteRoom(itemToDelete.id).unwrap();
       } else {
@@ -149,7 +174,7 @@ export default function LocationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <SectionHeader
           title="Campus Locations & Storage"
-          description="Manage physical campus infrastructure: storage units, department rooms, and buildings."
+          description="Manage physical campus infrastructure: buildings, floors, department rooms, and storage units."
         />
 
         {can("location.create") && (
@@ -172,9 +197,25 @@ export default function LocationsPage() {
                 <span>Add Room / Lab</span>
               </Button>
             )}
+            {activeTab === "floors" && (
+              <Button
+                onClick={() => {
+                  setSelectedFloor(null);
+                  setDefaultBuildingIdForFloor(undefined);
+                  setFloorModalOpen(true);
+                }}
+                className="gap-1.5 shadow-xs"
+              >
+                <Plus className="size-4" />
+                <span>Add Floor Level</span>
+              </Button>
+            )}
             {activeTab === "buildings" && (
               <Button
-                onClick={() => setBuildingModalOpen(true)}
+                onClick={() => {
+                  setSelectedBuilding(null);
+                  setBuildingModalOpen(true);
+                }}
                 className="gap-1.5 shadow-xs"
               >
                 <Plus className="size-4" />
@@ -186,21 +227,21 @@ export default function LocationsPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-border/80 gap-6">
+      <div className="flex border-b border-border/80 gap-6 overflow-x-auto">
         <button
           onClick={() => {
             setActiveTab("units");
             setSearchTerm("");
             setPage(1);
           }}
-          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 ${
+          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 whitespace-nowrap ${
             activeTab === "units"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           <Archive className="size-4" />
-          <span>Storage Units & Shelves ({stockLocations.length})</span>
+          <span>Storage Units & Shelves ({stockLocationsData?.meta?.total ?? stockLocations.length})</span>
         </button>
 
         <button
@@ -209,14 +250,30 @@ export default function LocationsPage() {
             setSearchTerm("");
             setPage(1);
           }}
-          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 ${
+          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 whitespace-nowrap ${
             activeTab === "rooms"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           <DoorOpen className="size-4" />
-          <span>Rooms & Labs ({rooms.length})</span>
+          <span>Rooms & Labs ({roomsData?.meta?.total ?? rooms.length})</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab("floors");
+            setSearchTerm("");
+            setPage(1);
+          }}
+          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 whitespace-nowrap ${
+            activeTab === "floors"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Layers className="size-4" />
+          <span>Floors & Levels ({floorsData?.meta?.total ?? floors.length})</span>
         </button>
 
         <button
@@ -225,14 +282,14 @@ export default function LocationsPage() {
             setSearchTerm("");
             setPage(1);
           }}
-          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 ${
+          className={`flex items-center gap-2 pb-3 text-xs font-semibold transition-all border-b-2 whitespace-nowrap ${
             activeTab === "buildings"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           <Building2 className="size-4" />
-          <span>Buildings ({buildings.length})</span>
+          <span>Buildings ({buildingsData?.meta?.total ?? buildings.length})</span>
         </button>
       </div>
 
@@ -340,6 +397,9 @@ export default function LocationsPage() {
                 <TableHead className="font-semibold text-xs">Room / Lab Name</TableHead>
                 <TableHead className="font-semibold text-xs">Status</TableHead>
                 <TableHead className="hidden md:table-cell font-semibold text-xs">
+                  Floor Level
+                </TableHead>
+                <TableHead className="hidden md:table-cell font-semibold text-xs">
                   Capacity
                 </TableHead>
                 <TableHead className="hidden sm:table-cell font-semibold text-xs">
@@ -355,9 +415,9 @@ export default function LocationsPage() {
 
             <TableBody>
               {isLoadingRooms ? (
-                <TableLoading colSpan={6} />
+                <TableLoading colSpan={7} />
               ) : rooms.length === 0 ? (
-                <TableEmpty colSpan={6} />
+                <TableEmpty colSpan={7} />
               ) : (
                 rooms.map((room) => (
                   <TableRow key={room.id} className="hover:bg-muted/30">
@@ -383,6 +443,17 @@ export default function LocationsPage() {
                       >
                         {room.status}
                       </Badge>
+                    </TableCell>
+
+                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                      {room.floor?.name ? (
+                        <div className="flex items-center gap-1.5">
+                          <Layers className="size-3 text-muted-foreground shrink-0" />
+                          <span>{room.floor.name}</span>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
 
                     <TableCell className="hidden md:table-cell text-xs text-muted-foreground font-mono">
@@ -413,7 +484,125 @@ export default function LocationsPage() {
         </div>
       )}
 
-      {/* TAB 3: Buildings */}
+      {/* TAB 3: Floors & Levels */}
+      {activeTab === "floors" && (
+        <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <TableHead className="w-[120px] font-semibold text-xs">Code</TableHead>
+                <TableHead className="font-semibold text-xs">Floor Level</TableHead>
+                <TableHead className="font-semibold text-xs">Level #</TableHead>
+                <TableHead className="hidden md:table-cell font-semibold text-xs">
+                  Parent Building
+                </TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold text-xs">
+                  Rooms
+                </TableHead>
+                <TableHead className="hidden sm:table-cell font-semibold text-xs">
+                  Storage Units
+                </TableHead>
+                <TableHead className="w-[100px] text-right font-semibold text-xs">
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {isLoadingFloors ? (
+                <TableLoading colSpan={7} />
+              ) : floors.length === 0 ? (
+                <TableEmpty
+                  colSpan={7}
+                  message="No floor levels registered yet. Click 'Add Floor Level' to configure floors for your buildings."
+                />
+              ) : (
+                floors.map((floor) => (
+                  <TableRow key={floor.id} className="hover:bg-muted/30">
+                    <TableCell>
+                      <Badge variant="outline" className="font-mono text-xs font-semibold">
+                        {floor.code}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Layers className="size-4 text-primary shrink-0" />
+                        <span className="font-medium text-sm text-foreground">
+                          {floor.name}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    <TableCell>
+                      <Badge variant="secondary" className="text-xs font-normal">
+                        {floor.floorNumber !== null && floor.floorNumber !== undefined
+                          ? `Level ${floor.floorNumber}`
+                          : "Standard"}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="hidden md:table-cell text-xs text-foreground">
+                      {floor.building ? (
+                        <div className="flex items-center gap-1.5">
+                          <Building2 className="size-3.5 text-muted-foreground shrink-0" />
+                          <span>{floor.building.name}</span>
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            ({floor.building.code})
+                          </span>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+
+                    <TableCell className="hidden sm:table-cell text-xs font-mono">
+                      <Badge variant="outline" className="text-[11px] px-2 py-0.5">
+                        {floor._count?.rooms ?? floor.rooms?.length ?? 0} rooms
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
+                      {floor._count?.locations ?? 0} storage points
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {can("location.update") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedFloor(floor);
+                              setDefaultBuildingIdForFloor(floor.buildingId);
+                              setFloorModalOpen(true);
+                            }}
+                            className="size-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        )}
+                        {can("location.delete") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenDelete(floor.id, floor.name, "floor")}
+                            className="size-8 text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* TAB 4: Buildings */}
       {activeTab === "buildings" && (
         <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
           <Table>
@@ -427,11 +616,9 @@ export default function LocationsPage() {
                 <TableHead className="hidden sm:table-cell font-semibold text-xs">
                   Description
                 </TableHead>
-                {can("location.delete") && (
-                  <TableHead className="w-[70px] text-right font-semibold text-xs">
-                    Actions
-                  </TableHead>
-                )}
+                <TableHead className="w-[120px] text-right font-semibold text-xs">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -467,18 +654,49 @@ export default function LocationsPage() {
                       {b.description || "—"}
                     </TableCell>
 
-                    {can("location.delete") && (
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenDelete(b.id, b.name, "building")}
-                          className="size-8 text-destructive hover:bg-destructive/10"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </TableCell>
-                    )}
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {can("location.create") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedFloor(null);
+                              setDefaultBuildingIdForFloor(b.id);
+                              setFloorModalOpen(true);
+                            }}
+                            className="h-8 px-2 text-xs text-primary gap-1"
+                            title="Add Floor to this Building"
+                          >
+                            <PlusCircle className="size-3.5" />
+                            <span className="hidden lg:inline">Add Floor</span>
+                          </Button>
+                        )}
+                        {can("location.update") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedBuilding(b);
+                              setBuildingModalOpen(true);
+                            }}
+                            className="size-8 text-muted-foreground hover:text-foreground"
+                          >
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        )}
+                        {can("location.delete") && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenDelete(b.id, b.name, "building")}
+                            className="size-8 text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -487,10 +705,32 @@ export default function LocationsPage() {
         </div>
       )}
 
+      {/* Pagination */}
+      {currentMeta && currentMeta.total > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={currentMeta.totalPage}
+          totalData={currentMeta.total}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+        />
+      )}
+
       {/* Modals */}
       <BuildingModal
         open={buildingModalOpen}
         onOpenChange={setBuildingModalOpen}
+        building={selectedBuilding}
+      />
+      <FloorModal
+        open={floorModalOpen}
+        onOpenChange={setFloorModalOpen}
+        floor={selectedFloor}
+        defaultBuildingId={defaultBuildingIdForFloor}
       />
       <RoomModal open={roomModalOpen} onOpenChange={setRoomModalOpen} />
       <StockLocationModal
@@ -511,7 +751,7 @@ export default function LocationsPage() {
           <div className="flex-1 overflow-y-auto p-5 text-xs text-muted-foreground">
             Are you sure you want to delete{" "}
             <strong className="text-foreground">
-              "{itemToDelete?.name}"
+              &quot;{itemToDelete?.name}&quot;
             </strong>
             ? This action cannot be undone.
           </div>
@@ -537,3 +777,4 @@ export default function LocationsPage() {
     </div>
   );
 }
+

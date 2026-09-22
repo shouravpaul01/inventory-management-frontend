@@ -191,6 +191,10 @@ export type TFloor = {
   floorNumber?: number | null;
   imageUrl?: string | null;
   rooms?: TRoom[];
+  _count?: {
+    rooms?: number;
+    locations?: number;
+  };
   createdAt: string;
   updatedAt: string;
 };
@@ -295,8 +299,6 @@ export type TUnitCondition = "NEW" | "GOOD" | "FAIR" | "POOR" | "DAMAGED";
 export type TInventoryUnit = {
   id: string;
   uniqueCode: string;
-  unitBarcode?: string;
-  barcode?: string | null;
   serialNumber?: string | null;
   status: TUnitStatus;
   condition: TUnitCondition;

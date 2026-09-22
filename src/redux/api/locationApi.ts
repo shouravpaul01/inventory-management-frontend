@@ -69,12 +69,20 @@ export const locationApi = baseApi.injectEndpoints({
     // Floors
     getFloors: builder.query<
       TApiResponse<TFloor[]>,
-      { buildingId?: string; searchTerm?: string } | void
+      { buildingId?: string; searchTerm?: string; page?: number; limit?: number } | void
     >({
       query: (params) => ({
         url: "/locations/floors",
         method: "GET",
         params: params || {},
+      }),
+      providesTags: ["Location"],
+    }),
+
+    getFloorById: builder.query<TApiResponse<TFloor>, string>({
+      query: (id) => ({
+        url: `/locations/floors/${id}`,
+        method: "GET",
       }),
       providesTags: ["Location"],
     }),
@@ -91,6 +99,26 @@ export const locationApi = baseApi.injectEndpoints({
       query: (body) => ({
         url: "/locations/floors",
         method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Location"],
+    }),
+
+    updateFloor: builder.mutation<
+      TApiResponse<TFloor>,
+      {
+        id: string;
+        body: {
+          buildingId?: string;
+          name?: string;
+          code?: string;
+          floorNumber?: number;
+        };
+      }
+    >({
+      query: ({ id, body }) => ({
+        url: `/locations/floors/${id}`,
+        method: "PATCH",
         body,
       }),
       invalidatesTags: ["Location"],
@@ -239,7 +267,9 @@ export const {
   useUpdateBuildingMutation,
   useDeleteBuildingMutation,
   useGetFloorsQuery,
+  useGetFloorByIdQuery,
   useCreateFloorMutation,
+  useUpdateFloorMutation,
   useDeleteFloorMutation,
   useGetRoomTypesQuery,
   useGetRoomsQuery,
