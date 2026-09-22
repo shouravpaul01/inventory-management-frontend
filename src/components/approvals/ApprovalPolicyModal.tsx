@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -13,12 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Field, FieldError } from "@/components/ui/field";
 import { FormInput } from "@/components/shared/form/FormInput";
-import { FormSelect } from "@/components/shared/form/FormSelect";
-import { FormRadioGroup } from "@/components/shared/form/FormRadioGroup";
 import { FormCheckbox } from "@/components/shared/form/FormCheckbox";
+import SearchInput from "@/components/shared/SearchInput";
+import FilterSelect from "@/components/shared/FilterSelect";
+import RequirementTypeSelector from "./RequirementTypeSelector";
+import TargetScopeSelector from "./TargetScopeSelector";
 import {
   useCreatePolicyMutation,
   useUpdatePolicyMutation,
@@ -30,15 +32,7 @@ import {
   TApprovalPolicyInput,
 } from "@/validation/approval.validation";
 import { TApprovalPolicy } from "@/type";
-import { toast } from "sonner";
-import {
-  ShieldCheck,
-  Search,
-  X,
-  Check,
-  Loader2,
-  ListChecks,
-} from "lucide-react";
+import { ShieldCheck, X, Check, Loader2, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ApprovalPolicyModalProps {
@@ -59,7 +53,9 @@ export default function ApprovalPolicyModal({
   const isLoading = isCreating || isUpdating;
   const isEditing = Boolean(policy?.id);
 
-  const { data: permsData, isLoading: isPermsLoading } = useGetPermissionsQuery({ limit: 300 });
+  const { data: permsData, isLoading: isPermsLoading } = useGetPermissionsQuery(
+    { limit: 300 },
+  );
   const permissions = permsData?.data;
 
   const { data: rolesData } = useGetRolesQuery();
@@ -75,7 +71,7 @@ export default function ApprovalPolicyModal({
         value: u.id,
         label: `${u.firstName} ${u.lastName || ""} (${u.email}) - ${u.employeeId || "Staff"}`,
       })),
-    [users]
+    [users],
   );
 
   const roleOptions = useMemo(
@@ -84,7 +80,7 @@ export default function ApprovalPolicyModal({
         value: r.id,
         label: `${r.name} (${r.code})`,
       })),
-    [roles]
+    [roles],
   );
 
   // Filter & Search states for permissions multi-select
@@ -135,7 +131,7 @@ export default function ApprovalPolicyModal({
 
   const selectedCodeSet = useMemo(
     () => new Set(selectedPermissionCodes),
-    [selectedPermissionCodes]
+    [selectedPermissionCodes],
   );
 
   useEffect(() => {
@@ -149,7 +145,7 @@ export default function ApprovalPolicyModal({
           p.scope === policy.scope &&
           (policy.scope === "USER"
             ? p.userId && p.userId === policy.userId
-            : p.roleId && p.roleId === policy.roleId)
+            : p.roleId && p.roleId === policy.roleId),
       );
 
       const initialCodes =
@@ -158,19 +154,19 @@ export default function ApprovalPolicyModal({
               new Set(
                 targetPolicies
                   .map((p) => p.permission?.code)
-                  .filter((code): code is string => Boolean(code))
-              )
+                  .filter((code): code is string => Boolean(code)),
+              ),
             )
           : policy.permission?.code
-          ? [policy.permission.code]
-          : [];
+            ? [policy.permission.code]
+            : [];
 
       const finalInitialCodes =
         initialCodes.length > 0
           ? initialCodes
           : policy.permission?.code
-          ? [policy.permission.code]
-          : [];
+            ? [policy.permission.code]
+            : [];
 
       reset({
         requirement: policy.requirement,
@@ -214,7 +210,8 @@ export default function ApprovalPolicyModal({
 
   const getCategoryOfPermission = (code: string) => {
     if (code.startsWith("requisition.")) return "REQUISITION";
-    if (code.startsWith("inventory_item.") || code.startsWith("item.")) return "INVENTORY_ITEM";
+    if (code.startsWith("inventory_item.") || code.startsWith("item."))
+      return "INVENTORY_ITEM";
     if (code.startsWith("stock.")) return "STOCK";
     if (code.startsWith("category.")) return "CATEGORY";
     if (
@@ -236,7 +233,10 @@ export default function ApprovalPolicyModal({
       }
       if (permissionSearch.trim()) {
         const term = permissionSearch.toLowerCase();
-        return p.name.toLowerCase().includes(term) || p.code.toLowerCase().includes(term);
+        return (
+          p.name.toLowerCase().includes(term) ||
+          p.code.toLowerCase().includes(term)
+        );
       }
       return true;
     });
@@ -297,15 +297,19 @@ export default function ApprovalPolicyModal({
           userId: values.scope === "USER" ? values.userId : null,
           roleId: values.scope === "ROLE" ? values.roleId : null,
           approvalLevelCount:
-            values.requirement === "REQUIRED" ? Number(values.approvalLevelCount) || 1 : 1,
+            values.requirement === "REQUIRED"
+              ? Number(values.approvalLevelCount) || 1
+              : 1,
           allowSelfApproval:
-            values.requirement === "REQUIRED" ? Boolean(values.allowSelfApproval) : false,
+            values.requirement === "REQUIRED"
+              ? Boolean(values.allowSelfApproval)
+              : false,
         }).unwrap();
 
         toast.success(
           values.permissionCodes.length > 1
             ? `Updated policy across ${values.permissionCodes.length} action(s) successfully!`
-            : "Approval policy / exemption updated successfully!"
+            : "Approval policy / exemption updated successfully!",
         );
       } else {
         await createPolicy({
@@ -315,15 +319,19 @@ export default function ApprovalPolicyModal({
           userId: values.scope === "USER" ? values.userId : undefined,
           roleId: values.scope === "ROLE" ? values.roleId : undefined,
           approvalLevelCount:
-            values.requirement === "REQUIRED" ? Number(values.approvalLevelCount) || 1 : 1,
+            values.requirement === "REQUIRED"
+              ? Number(values.approvalLevelCount) || 1
+              : 1,
           allowSelfApproval:
-            values.requirement === "REQUIRED" ? Boolean(values.allowSelfApproval) : false,
+            values.requirement === "REQUIRED"
+              ? Boolean(values.allowSelfApproval)
+              : false,
         }).unwrap();
 
         toast.success(
           values.requirement === "NOT_REQUIRED"
             ? `Exemption applied for ${values.permissionCodes.length} action(s)! Target can now perform these directly.`
-            : `Approval policy applied for ${values.permissionCodes.length} action(s)! Strict review enabled.`
+            : `Approval policy applied for ${values.permissionCodes.length} action(s)! Strict review enabled.`,
         );
       }
 
@@ -331,7 +339,8 @@ export default function ApprovalPolicyModal({
       onOpenChange(false);
     } catch (err: any) {
       toast.error(
-        err?.data?.message || `Failed to ${isEditing ? "update" : "create"} approval policy`
+        err?.data?.message ||
+          `Failed to ${isEditing ? "update" : "create"} approval policy`,
       );
     }
   };
@@ -342,7 +351,7 @@ export default function ApprovalPolicyModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-foreground font-bold">
             <ShieldCheck className="size-5 text-primary" />
@@ -353,64 +362,39 @@ export default function ApprovalPolicyModal({
           <DialogDescription className="text-xs">
             {isEditing
               ? "Update rule configuration, target person or role, and selected actions."
-              : "Configure institutional governance. Select multiple actions and designate which specific person or role is exempted from Super Admin sign-off, or enforce strict multi-tier review."}
+              : "Configure institutional governance. Designate specific persons or roles to be exempted from Super Admin sign-off, or enforce multi-tier maker-checker verification."}
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
-            {/* 1. Requirement Type */}
-            <FormRadioGroup
-              name="requirement"
-              label="Policy Objective (Requirement)"
-              options={[
-                { label: "Exempt From Approval (Direct Database Save)", value: "NOT_REQUIRED" },
-                { label: "Require Approval (Staged Maker-Checker Review)", value: "REQUIRED" },
-              ]}
-            />
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          >
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* 1. Requirement Type (Policy Objective) */}
+              <RequirementTypeSelector />
 
-            {/* 2. Target Scope (Strictly Person or Role - No System/All Users) */}
-            <FormRadioGroup
-              name="scope"
-              label="Target Scope"
-              options={[
-                { label: "Specific Person (User)", value: "USER" },
-                { label: "Entire Role", value: "ROLE" },
-              ]}
-            />
-
-            {/* 3. Dynamic Target Person / Role Selector */}
-            {scope === "USER" && (
-              <FormSelect
-                name="userId"
-                label="Select Person (User)"
-                placeholder="Choose a user..."
-                options={userOptions}
-                required
+              {/* 2. Target Scope (Assignment Level) & Dynamic Target Selector */}
+              <TargetScopeSelector
+                userOptions={userOptions}
+                roleOptions={roleOptions}
               />
-            )}
 
-            {scope === "ROLE" && (
-              <FormSelect
-                name="roleId"
-                label="Select Target Role"
-                placeholder="Choose a role..."
-                options={roleOptions}
-                required
-              />
-            )}
-
-            {/* 4. Target Action / Permissions */}
-            <Field>
+              {/* 4. Target Action / Permissions */}
+              <Field>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <ListChecks className="size-4 text-primary" />
                     <span className="text-xs font-semibold text-foreground">
-                      Target Actions / Permissions <span className="text-destructive">*</span>
+                      Target Actions / Permissions{" "}
+                      <span className="text-destructive">*</span>
                     </span>
                     {selectedPermissionCodes.length > 0 && (
-                      <Badge variant="secondary" className="text-[10px] font-bold px-1.5 py-0">
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-bold px-1.5 py-0"
+                      >
                         {selectedPermissionCodes.length} selected
                       </Badge>
                     )}
@@ -422,11 +406,15 @@ export default function ApprovalPolicyModal({
                       variant="ghost"
                       size="xs"
                       onClick={
-                        allFilteredSelected ? handleDeselectAllFiltered : handleSelectAllFiltered
+                        allFilteredSelected
+                          ? handleDeselectAllFiltered
+                          : handleSelectAllFiltered
                       }
                       className="text-[11px] h-6 px-2 text-primary hover:text-primary cursor-pointer"
                     >
-                      {allFilteredSelected ? "Deselect Filtered" : "Select All Filtered"}
+                      {allFilteredSelected
+                        ? "Deselect Filtered"
+                        : "Select All Filtered"}
                     </Button>
                     {selectedPermissionCodes.length > 0 && (
                       <Button
@@ -447,48 +435,50 @@ export default function ApprovalPolicyModal({
                   </div>
                 </div>
 
-                {/* Category Filter Pills */}
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {[
-                    { id: "ALL", label: "All Actions" },
-                    { id: "REQUISITION", label: "Requisitions" },
-                    { id: "INVENTORY_ITEM", label: "Inventory Items" },
-                    { id: "STOCK", label: "Stock Operations" },
-                    { id: "CATEGORY", label: "Categories" },
-                    { id: "ORGANIZATION", label: "Departments & Locations" },
-                  ].map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setSelectedCategoryFilter(cat.id)}
-                      className={cn(
-                        "px-2 py-0.5 text-[11px] rounded-md transition-colors cursor-pointer border",
-                        selectedCategoryFilter === cat.id
-                          ? "bg-primary text-primary-foreground font-semibold border-primary"
-                          : "bg-muted/40 text-muted-foreground hover:text-foreground border-transparent"
-                      )}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
+                {/* Search & Category Filter Bar */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2 bg-muted p-3 rounded-md">
+                  <div className="flex-1">
+                    <SearchInput
+                      placeholder="Search action by name or code (e.g. create, requisition, stock)..."
+                      value={permissionSearch}
+                      onChange={setPermissionSearch}
+                    />
+                  </div>
 
-                {/* Quick Search */}
-                <div className="relative mt-2">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search action by name or code (e.g. create, requisition, stock)..."
-                    value={permissionSearch}
-                    onChange={(e) => setPermissionSearch(e.target.value)}
-                    className="pl-8 h-8 text-xs bg-white dark:bg-card"
-                  />
+                  <div className="w-full sm:w-56">
+                    <FilterSelect
+                      placeholder="Filter by Category"
+                      value={
+                        selectedCategoryFilter === "ALL"
+                          ? ""
+                          : selectedCategoryFilter
+                      }
+                      onChange={(val) =>
+                        setSelectedCategoryFilter(val || "ALL")
+                      }
+                      options={[
+                        { label: "Requisitions", value: "REQUISITION" },
+                        { label: "Inventory Items", value: "INVENTORY_ITEM" },
+                        { label: "Stock Operations", value: "STOCK" },
+                        { label: "Categories", value: "CATEGORY" },
+                        {
+                          label: "Departments & Locations",
+                          value: "ORGANIZATION",
+                        },
+                      ]}
+                      includeAllOption
+                      allLabel="All Action Categories"
+                    />
+                  </div>
                 </div>
 
                 {/* Selected Chips View */}
                 {selectedPermissionCodes.length > 0 && (
-                  <div className="flex flex-wrap gap-1 p-2 mt-2 rounded-lg bg-muted/30 border max-h-24 overflow-y-auto">
+                  <div className="flex flex-wrap gap-1 p-2 mt-2 rounded-lg bg-muted/30 border ">
                     {selectedPermissionCodes.map((code) => {
-                      const perm = mutationPermissions.find((p) => p.code === code);
+                      const perm = mutationPermissions.find(
+                        (p) => p.code === code,
+                      );
                       return (
                         <span
                           key={code}
@@ -509,7 +499,7 @@ export default function ApprovalPolicyModal({
                 )}
 
                 {/* Permissions Checkbox List Container */}
-                <div className="rounded-lg border bg-card max-h-48 overflow-y-auto divide-y mt-2 shadow-2xs">
+                <div className="rounded-lg border bg-card  divide-y mt-2 shadow-2xs">
                   {isPermsLoading ? (
                     <div className="p-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                       <Loader2 className="size-4 animate-spin text-primary" />
@@ -528,7 +518,9 @@ export default function ApprovalPolicyModal({
                           onClick={() => togglePermission(perm.code)}
                           className={cn(
                             "flex items-center justify-between p-2.5 cursor-pointer transition-colors text-xs select-none",
-                            isChecked ? "bg-primary/5 hover:bg-primary/10" : "hover:bg-muted/40"
+                            isChecked
+                              ? "bg-primary/5 hover:bg-primary/10"
+                              : "hover:bg-muted/40",
                           )}
                         >
                           <div className="flex items-center gap-2.5">
@@ -537,20 +529,27 @@ export default function ApprovalPolicyModal({
                                 "size-4 shrink-0 rounded-[4px] border transition-colors flex items-center justify-center",
                                 isChecked
                                   ? "bg-primary border-primary text-primary-foreground"
-                                  : "border-input bg-background"
+                                  : "border-input bg-background",
                               )}
                             >
-                              {isChecked && <Check className="size-3 stroke-[3]" />}
+                              {isChecked && (
+                                <Check className="size-3 stroke-[3]" />
+                              )}
                             </div>
                             <div>
-                              <div className="font-semibold text-foreground">{perm.name}</div>
+                              <div className="font-semibold text-foreground">
+                                {perm.name}
+                              </div>
                               <div className="text-[10px] font-mono text-muted-foreground">
                                 {perm.code}
                               </div>
                             </div>
                           </div>
 
-                          <Badge variant="outline" className="text-[9px] font-mono shrink-0">
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] font-mono shrink-0"
+                          >
                             {getCategoryOfPermission(perm.code)}
                           </Badge>
                         </div>
@@ -560,30 +559,31 @@ export default function ApprovalPolicyModal({
                 </div>
 
                 {errors.permissionCodes && (
-                  <FieldError className="mt-1.5">{errors.permissionCodes.message}</FieldError>
+                  <FieldError className="mt-1.5">
+                    {errors.permissionCodes.message}
+                  </FieldError>
                 )}
               </Field>
 
-            {/* 5. Levels & Self-Approval (if REQUIRED) */}
-            {requirement === "REQUIRED" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 border-t">
-                <FormInput
-                  name="approvalLevelCount"
-                  label="Approval Levels (Tiers)"
-                  type="number"
-                  placeholder="1"
-                />
-
-                <div className="pt-2">
-                  <FormCheckbox
-                    name="allowSelfApproval"
-                    label="Allow Self-Approval"
-                    description="Allow requester to approve their own request if they have reviewer permissions"
+              {/* 5. Levels & Self-Approval (if REQUIRED) */}
+              {requirement === "REQUIRED" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 border-t">
+                  <FormInput
+                    name="approvalLevelCount"
+                    label="Approval Levels (Tiers)"
+                    type="number"
+                    placeholder="1"
                   />
-                </div>
-              </div>
-            )}
 
+                  <div className="pt-2">
+                    <FormCheckbox
+                      name="allowSelfApproval"
+                      label="Allow Self-Approval"
+                      description="Allow requester to approve their own request if they have reviewer permissions"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <DialogFooter className="p-4 border-t bg-card shrink-0">
@@ -600,15 +600,18 @@ export default function ApprovalPolicyModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || (!isEditing && selectedPermissionCodes.length === 0)}
+                disabled={
+                  isLoading ||
+                  (!isEditing && selectedPermissionCodes.length === 0)
+                }
                 className="bg-primary cursor-pointer"
               >
                 {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
                 {isEditing
                   ? "Update Policy Rule"
                   : selectedPermissionCodes.length > 1
-                  ? `Save Rules (${selectedPermissionCodes.length} actions)`
-                  : "Save Policy / Exemption"}
+                    ? `Save Rules (${selectedPermissionCodes.length} actions)`
+                    : "Save Policy / Exemption"}
               </Button>
             </DialogFooter>
           </form>

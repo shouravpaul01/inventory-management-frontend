@@ -254,17 +254,16 @@ export default function ReportsPage() {
                   <TableHead className="font-semibold text-xs py-3.5">Asset Tag</TableHead>
                   <TableHead className="font-semibold text-xs py-3.5">Item Name</TableHead>
                   <TableHead className="font-semibold text-xs py-3.5">Serial #</TableHead>
-                  <TableHead className="font-semibold text-xs py-3.5">Barcode</TableHead>
                   <TableHead className="font-semibold text-xs py-3.5 text-center">Condition</TableHead>
                   <TableHead className="font-semibold text-xs py-3.5 text-center">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isMyAssetsLoading ? (
-                  <TableLoading colSpan={6} />
+                  <TableLoading colSpan={5} />
                 ) : myAssets.length === 0 ? (
                   <TableEmpty
-                    colSpan={6}
+                    colSpan={5}
                     message="No physical assets currently checked out to your account."
                     description="When university equipment is issued or allocated to you, it will be listed here."
                   />
@@ -288,9 +287,6 @@ export default function ReportsPage() {
                         {unit.serialNumber || "—"}
                       </TableCell>
 
-                      <TableCell className="py-3 font-mono text-xs text-muted-foreground">
-                        {unit.barcode || "—"}
-                      </TableCell>
 
                       <TableCell className="py-3 text-center">
                         <Badge variant="outline" className="text-[10px]">

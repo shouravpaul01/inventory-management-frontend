@@ -49,7 +49,6 @@ export const unitApi = baseApi.injectEndpoints({
         inventoryItemId: string;
         uniqueCode?: string;
         serialNumber?: string;
-        barcode?: string;
         condition?: TUnitCondition;
         locationId?: string;
         purchaseDate?: string;
@@ -91,7 +90,6 @@ export const unitApi = baseApi.injectEndpoints({
         id: string;
         body: {
           serialNumber?: string;
-          barcode?: string;
           condition?: TUnitCondition;
           locationId?: string;
           notes?: string;

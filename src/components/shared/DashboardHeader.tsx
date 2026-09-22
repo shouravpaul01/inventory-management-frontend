@@ -58,11 +58,11 @@ export default function DashboardHeader() {
     : user?.roles?.[0] || "Staff";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-background/95 px-4 backdrop-blur transition-[width,height] ease-linear">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-border/60 bg-background/95 px-4 backdrop-blur transition-[width,height] ease-linear">
       {/* Left section: Sidebar trigger + Department context */}
       <div className="flex items-center gap-2.5">
         <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="h-4" />
+        <Separator orientation="vertical" className="h-4 my-auto" />
 
         <div className="flex items-center gap-2">
           {department ? (
@@ -100,7 +100,7 @@ export default function DashboardHeader() {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:flex flex-col text-left leading-none">
-                <span className="text-xs font-semibold truncate max-w-[120px]">
+                <span className="text-sm font-semibold truncate max-w-[120px]">
                   {user?.firstName || user?.username || "User"}
                 </span>
                 <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">

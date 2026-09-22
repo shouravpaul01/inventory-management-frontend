@@ -79,7 +79,6 @@ export default function UnitModal({
       inventoryItemId: defaultItemId || "",
       uniqueCode: "",
       serialNumber: "",
-      barcode: "",
       condition: "NEW",
       locationId: "",
       purchaseDate: "",
@@ -107,7 +106,6 @@ export default function UnitModal({
         inventoryItemId: data.inventoryItemId,
         uniqueCode: data.uniqueCode?.trim() || undefined,
         serialNumber: data.serialNumber?.trim() || undefined,
-        barcode: data.barcode?.trim() || undefined,
         condition: data.condition,
         locationId: data.locationId || undefined,
         purchaseDate: data.purchaseDate || undefined,
@@ -115,7 +113,7 @@ export default function UnitModal({
         notes: data.notes?.trim() || undefined,
       }).unwrap();
 
-      toast.success("Asset unit created with unique barcode 🎉");
+      toast.success("Asset unit created successfully 🎉");
       onOpenChange(false);
       singleMethods.reset();
     } catch (error: any) {
@@ -155,8 +153,8 @@ export default function UnitModal({
           </div>
           <DialogDescription>
             {isBatchMode
-              ? "Generate a sequence of serialized barcodes for identical physical asset units."
-              : "Register an individual physical asset with barcode tracking and serial number."}
+              ? "Generate a sequence of serialized unique asset units."
+              : "Register an individual physical asset with asset tag and serial number."}
           </DialogDescription>
         </DialogHeader>
 
@@ -207,7 +205,7 @@ export default function UnitModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormInput
                   name="uniqueCode"
-                  label="Asset Code / Barcode (Auto-generated if empty)"
+                  label="Asset Code / Tag (Auto-generated if empty)"
                   placeholder="e.g. AST-000104"
                   disabled={isLoading}
                 />

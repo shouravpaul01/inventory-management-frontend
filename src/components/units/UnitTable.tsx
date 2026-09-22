@@ -121,10 +121,10 @@ export default function UnitTable({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/40 hover:bg-muted/40">
-            <TableHead className="w-[140px] font-semibold text-xs">Asset Barcode</TableHead>
+            <TableHead className="w-[140px] font-semibold text-xs">Asset Code</TableHead>
             <TableHead className="font-semibold text-xs">Item Model</TableHead>
             <TableHead className="hidden md:table-cell font-semibold text-xs">
-              Serial / RFID
+              Serial Number
             </TableHead>
             <TableHead className="w-[100px] font-semibold text-xs">Condition</TableHead>
             <TableHead className="w-[110px] font-semibold text-xs">Status</TableHead>
@@ -168,7 +168,7 @@ export default function UnitTable({
                 </TableCell>
 
                 <TableCell className="hidden md:table-cell text-xs font-mono text-muted-foreground">
-                  {unit.serialNumber || unit.barcode || "—"}
+                  {unit.serialNumber || "—"}
                 </TableCell>
 
                 <TableCell>{getConditionBadge(unit.condition)}</TableCell>

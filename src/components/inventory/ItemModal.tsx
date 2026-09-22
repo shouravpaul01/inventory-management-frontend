@@ -52,7 +52,7 @@ export default function ItemModal({
   }));
 
   const trackingTypeOptions = [
-    { value: "SERIALIZED", label: "Serialized Asset (Tracked with individual barcodes/units)" },
+    { value: "SERIALIZED", label: "Serialized Asset (Tracked with individual units / serial numbers)" },
     { value: "BULK", label: "Bulk Consumable (Tracked by total quantity / balances)" },
   ];
 
