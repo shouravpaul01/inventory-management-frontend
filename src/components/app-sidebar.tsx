@@ -163,6 +163,14 @@ const administrationNav: NavItem[] = [
   },
 ];
 
+const allNavItems: NavItem[] = [
+  ...overviewNav,
+  ...inventoryNav,
+  ...workflowNav,
+  ...organizationNav,
+  ...administrationNav,
+];
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -195,11 +203,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent className="gap-0 py-2">
-        <NavMain items={overviewNav} groupLabel="Overview" />
-        <NavMain items={inventoryNav} groupLabel="Inventory & Stock" />
-        <NavMain items={workflowNav} groupLabel="Workflows & Requests" />
-        <NavMain items={organizationNav} groupLabel="Organization" />
-        <NavMain items={administrationNav} groupLabel="Administration" />
+        <NavMain items={overviewNav} groupLabel="Overview" allNavItems={allNavItems} />
+        <NavMain items={inventoryNav} groupLabel="Inventory & Stock" allNavItems={allNavItems} />
+        <NavMain items={workflowNav} groupLabel="Workflows & Requests" allNavItems={allNavItems} />
+        <NavMain items={organizationNav} groupLabel="Organization" allNavItems={allNavItems} />
+        <NavMain items={administrationNav} groupLabel="Administration" allNavItems={allNavItems} />
       </SidebarContent>
 
       <SidebarFooter className="border-t border-border/40 p-3 space-y-2">

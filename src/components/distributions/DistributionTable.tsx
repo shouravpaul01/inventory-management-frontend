@@ -22,6 +22,7 @@ import {
   PackageCheck,
   User,
   Truck,
+  Gift,
 } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
 
@@ -116,6 +117,23 @@ export default function DistributionTable({
                       <div className="flex items-center gap-1.5">
                         <SendHorizontal className="size-3.5 text-primary shrink-0" />
                         <span>{dist.distributionNo}</span>
+                      </div>
+                      <div className="mt-1">
+                        {dist.issueMode === "GIFT" ? (
+                          <Badge className="bg-purple-600/90 text-white text-[10px] gap-1 px-1.5 py-0 font-normal">
+                            <Gift className="size-2.5" />
+                            Gift Issue
+                          </Badge>
+                        ) : dist.issueMode === "TEMPORARY" ? (
+                          <Badge className="bg-amber-600/90 text-white text-[10px] gap-1 px-1.5 py-0 font-normal">
+                            <Clock className="size-2.5" />
+                            Returnable Loan
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
+                            Permanent
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
 

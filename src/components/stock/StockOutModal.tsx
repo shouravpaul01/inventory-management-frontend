@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -15,12 +15,13 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/shared/form/FormInput";
 import { FormTextarea } from "@/components/shared/form/FormTextarea";
 import { FormSelect } from "@/components/shared/form/FormSelect";
+import { FormFileUpload } from "@/components/shared/form/FormFileUpload";
 import { useStockOutMutation } from "@/redux/api/stockApi";
 import { useGetItemsQuery } from "@/redux/api/itemApi";
 import { useGetStockLocationsQuery } from "@/redux/api/locationApi";
 import { stockOutSchema, TStockOutInput } from "@/validation/stock.validation";
 import { toast } from "sonner";
-import { Loader2, MinusCircle, Upload } from "lucide-react";
+import { Loader2, MinusCircle } from "lucide-react";
 import { TStockBalance } from "@/type";
 import SerializedUnitPicker from "./SerializedUnitPicker";
 
@@ -35,8 +36,6 @@ export default function StockOutModal({
   onOpenChange,
   defaultBalance,
 }: StockOutModalProps) {
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
 
   const { data: itemsData } = useGetItemsQuery({ limit: 100 });
@@ -73,21 +72,22 @@ export default function StockOutModal({
       quantity: 1,
       type: "STOCK_OUT",
       notes: "",
+      photo: null,
     },
   });
-  const { reset, watch, setValue } = methods;
+  const { reset, watch, setValue, getValues } = methods;
 
   const watchItemId = watch("inventoryItemId");
   const watchLocationId = watch("locationId");
 
   const selectedItem = items.find((i) => i.id === watchItemId);
-  const isSerialized = selectedItem?.trackingType === "SERIALIZED" || Boolean(selectedItem?.isReturnable);
+  const isSerialized =
+    selectedItem?.trackingType === "SERIALIZED" ||
+    Boolean(selectedItem?.isReturnable);
 
   useEffect(() => {
     if (!open) {
-      setSelectedPhoto(null);
-      setPhotoPreview(null);
-      setSelectedUnitIds([]);
+      setSelectedUnitIds((prev) => (prev.length === 0 ? prev : []));
       return;
     }
     if (defaultBalance) {
@@ -97,34 +97,39 @@ export default function StockOutModal({
         quantity: 1,
         type: "STOCK_OUT",
         notes: "",
+        photo: null,
       });
-      setSelectedUnitIds([]);
+      setSelectedUnitIds((prev) => (prev.length === 0 ? prev : []));
     }
-  }, [defaultBalance?.id, open, reset]);
+  }, [defaultBalance?.id, open]);
 
   // Reset selected units if item or location changes
+  const prevRef = useRef({ itemId: watchItemId, locId: watchLocationId });
   useEffect(() => {
-    setSelectedUnitIds([]);
+    if (
+      prevRef.current.itemId !== watchItemId ||
+      prevRef.current.locId !== watchLocationId
+    ) {
+      prevRef.current = { itemId: watchItemId, locId: watchLocationId };
+      setSelectedUnitIds((prev) => (prev.length === 0 ? prev : []));
+    }
   }, [watchItemId, watchLocationId]);
 
   // Sync quantity form value with selected units count when serialized
   useEffect(() => {
     if (isSerialized) {
-      setValue("quantity", selectedUnitIds.length > 0 ? selectedUnitIds.length : 1);
+      const targetQty = selectedUnitIds.length > 0 ? selectedUnitIds.length : 1;
+      if (Number(getValues("quantity")) !== targetQty) {
+        setValue("quantity", targetQty);
+      }
     }
-  }, [isSerialized, selectedUnitIds, setValue]);
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    }
-  };
+  }, [isSerialized, selectedUnitIds, setValue, getValues]);
 
   const onSubmit = async (values: TStockOutInput) => {
     if (isSerialized && selectedUnitIds.length === 0) {
-      toast.error("Please select at least one serialized unit code to deduct/write-off.");
+      toast.error(
+        "Please select at least one serialized unit code to deduct/write-off.",
+      );
       return;
     }
 
@@ -132,7 +137,9 @@ export default function StockOutModal({
       const payloadData: any = {
         inventoryItemId: values.inventoryItemId,
         locationId: values.locationId,
-        quantity: isSerialized ? selectedUnitIds.length : Number(values.quantity),
+        quantity: isSerialized
+          ? selectedUnitIds.length
+          : Number(values.quantity),
         type: values.type,
         notes: values.notes || undefined,
       };
@@ -143,15 +150,13 @@ export default function StockOutModal({
 
       const formData = new FormData();
       formData.append("data", JSON.stringify(payloadData));
-      if (selectedPhoto) {
-        formData.append("photo", selectedPhoto);
+      if (values.photo && values.photo instanceof File) {
+        formData.append("photo", values.photo);
       }
 
       await stockOut(formData).unwrap();
       toast.success("Stock deducted and asset movement recorded successfully.");
       methods.reset();
-      setSelectedPhoto(null);
-      setPhotoPreview(null);
       setSelectedUnitIds([]);
       onOpenChange(false);
     } catch (err: any) {
@@ -161,19 +166,23 @@ export default function StockOutModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-xl! max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-rose-600">
+          <DialogTitle className="flex items-center gap-2 text-rose-600 text-xl!">
             <MinusCircle className="size-5" />
             Stock Out (Deduction / Disposal)
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Record inventory write-offs, damaged stock disposal, or asset consumption.
+            Record inventory write-offs, damaged stock disposal, or asset
+            consumption.
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <form
+            onSubmit={methods.handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          >
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <FormSelect
                 name="inventoryItemId"
@@ -226,32 +235,15 @@ export default function StockOutModal({
               />
 
               {/* Photo Upload */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-foreground">
-                  Attachment (Damage / Disposal Evidence)
-                </label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 border rounded-md border-dashed cursor-pointer hover:bg-muted/50 text-xs text-muted-foreground transition-colors">
-                    <Upload className="size-4" />
-                    <span>{selectedPhoto ? selectedPhoto.name : "Upload image"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePhotoChange}
-                    />
-                  </label>
-                  {photoPreview && (
-                    <div className="relative size-10 rounded border overflow-hidden shrink-0">
-                      <img
-                        src={photoPreview}
-                        alt="Preview"
-                        className="size-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <FormFileUpload
+                name="photo"
+                label="Attachment (Damage / Disposal Evidence)"
+                description="Upload evidence photo of damaged items, disposal certificate, or incident report"
+                mode="image"
+                maxSizeMB={5}
+                height="h-28"
+                className="dark:bg-card/40"
+              />
             </div>
 
             <DialogFooter className="p-4 border-t bg-card shrink-0">
@@ -265,11 +257,16 @@ export default function StockOutModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || (isSerialized && selectedUnitIds.length === 0)}
+                disabled={
+                  isLoading || (isSerialized && selectedUnitIds.length === 0)
+                }
                 className="bg-rose-600 hover:bg-rose-700 text-white"
               >
                 {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Confirm Stock Out {isSerialized && selectedUnitIds.length > 0 ? `(${selectedUnitIds.length} units)` : ""}
+                Confirm Stock Out{" "}
+                {isSerialized && selectedUnitIds.length > 0
+                  ? `(${selectedUnitIds.length} units)`
+                  : ""}
               </Button>
             </DialogFooter>
           </form>
@@ -278,4 +275,3 @@ export default function StockOutModal({
     </Dialog>
   );
 }
-

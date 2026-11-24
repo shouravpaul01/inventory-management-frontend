@@ -72,6 +72,15 @@ export function FormSelect({
                   : undefined
                 : field.value;
 
+            const selectedOption = safeOptions.find(
+              (option) => option.value === selectValue
+            );
+
+            const displayLabel =
+              selectValue === EMPTY_FORM_VALUE && !selectedOption?.label
+                ? null
+                : selectedOption?.label;
+
             return (
               <Select
                 value={selectValue}
@@ -89,9 +98,12 @@ export function FormSelect({
                   ref={field.ref}
                   className="bg-white dark:bg-card h-12! w-full"
                 >
-                  <SelectValue>
-                    {safeOptions.find((option) => option.value === selectValue)
-                      ?.label || placeholder}
+                  <SelectValue placeholder={placeholder}>
+                    {displayLabel ? (
+                      displayLabel
+                    ) : (
+                      <span className="text-muted-foreground">{placeholder}</span>
+                    )}
                   </SelectValue>
                 </SelectTrigger>
 

@@ -14,11 +14,20 @@ import DistributionDetailsModal from "@/components/distributions/DistributionDet
 import StatCard from "@/components/shared/StatCard";
 import { useGetDistributionsQuery } from "@/redux/api/distributionApi";
 import { usePermission } from "@/hooks/usePermission";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useDebounce } from "@/hooks/useDebounce";
 import { TDistribution, TDeliveryStatus } from "@/type";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Layers } from "lucide-react";
 
 export default function DistributionsPage() {
   const { can } = usePermission();
+  const { user, isSuperAdmin } = useCurrentUser();
+
+  const canIssue = isSuperAdmin || can("distribution.create");
+  const [scope, setScope] = useState<"all" | "my_distributions">(() => {
+    return canIssue ? "all" : "my_distributions";
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
@@ -40,6 +49,7 @@ export default function DistributionsPage() {
     searchTerm: debouncedSearch || undefined,
     deliveryStatus: (deliveryStatus as TDeliveryStatus) || undefined,
     issueMode: issueMode || undefined,
+    receiverId: scope === "my_distributions" ? user?.id : undefined,
     page,
     limit,
     sortBy: "createdAt",
@@ -76,8 +86,16 @@ export default function DistributionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <SectionHeader
-          title="Material Distributions & Dispatches"
-          description="Warehouse item issues, departmental gate passes, delivery challans, and physical receipt sign-offs."
+          title={
+            scope === "my_distributions"
+              ? "My Distributed Assets & Gift Issues"
+              : "Material Distributions & Dispatches"
+          }
+          description={
+            scope === "my_distributions"
+              ? "View institutional equipment, lab supplies, temporary loans, and gift awards delivered or assigned to you."
+              : "Warehouse item issues, departmental gate passes, delivery challans, and physical receipt sign-offs."
+          }
         />
 
         {can("distribution.create") && (
@@ -90,6 +108,29 @@ export default function DistributionsPage() {
           </Button>
         )}
       </div>
+
+      {/* Scope Navigation Tabs */}
+      <Tabs
+        value={scope}
+        onValueChange={(val: any) => {
+          setScope(val);
+          setPage(1);
+        }}
+        className="w-full"
+      >
+        <TabsList className="bg-muted/60 p-1">
+          <TabsTrigger value="my_distributions" className="gap-2 text-xs">
+            <User className="size-3.5" />
+            <span>My Received Items & Handover</span>
+          </TabsTrigger>
+          {canIssue && (
+            <TabsTrigger value="all" className="gap-2 text-xs">
+              <Layers className="size-3.5" />
+              <span>All Warehouse Dispatches</span>
+            </TabsTrigger>
+          )}
+        </TabsList>
+      </Tabs>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

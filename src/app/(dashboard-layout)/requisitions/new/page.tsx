@@ -15,6 +15,7 @@ import RequisitionCheckoutDialog from "@/components/requisitions/catalog/Requisi
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import EmptyState from "@/components/shared/EmptyState";
+import ItemDetailsModal from "@/components/inventory/ItemDetailsModal";
 import { ShieldAlert, PackageOpen } from "lucide-react";
 
 function RequisitionCatalogContent() {
@@ -29,6 +30,8 @@ function RequisitionCatalogContent() {
   const [stockFilter, setStockFilter] = useState<"ALL" | "IN_STOCK" | "LOW_STOCK">("ALL");
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedDetailsItemId, setSelectedDetailsItemId] = useState<string | null>(null);
 
   // Queries
   const { data: categoriesData } = useGetCategoriesQuery({ limit: 100 });
@@ -157,10 +160,21 @@ function RequisitionCatalogContent() {
               key={item.id}
               item={item}
               stockCount={stockMap[item.id]}
+              onViewDetails={(it) => {
+                setSelectedDetailsItemId(it.id);
+                setDetailsModalOpen(true);
+              }}
             />
           ))}
         </div>
       )}
+
+      {/* Dedicated Item Details Modal */}
+      <ItemDetailsModal
+        itemId={selectedDetailsItemId}
+        open={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+      />
 
       {/* Slide-over Cart Drawer */}
       <RequisitionCartDrawer

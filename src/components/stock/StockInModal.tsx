@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -15,16 +15,13 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/shared/form/FormInput";
 import { FormTextarea } from "@/components/shared/form/FormTextarea";
 import { FormSelect } from "@/components/shared/form/FormSelect";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormFileUpload } from "@/components/shared/form/FormFileUpload";
 import { useStockInMutation } from "@/redux/api/stockApi";
 import { useGetItemsQuery } from "@/redux/api/itemApi";
 import { useGetStockLocationsQuery } from "@/redux/api/locationApi";
-import { stockInSchema, TStockInInput, TUnitIntakeItem } from "@/validation/stock.validation";
+import { stockInSchema, TStockInInput } from "@/validation/stock.validation";
 import { toast } from "sonner";
-import { Loader2, PlusCircle, Upload, ShieldCheck, Sparkles, Hash } from "lucide-react";
+import { Loader2, PlusCircle, ShieldCheck, Sparkles, Hash } from "lucide-react";
 import { TStockBalance } from "@/type";
 import { handleMutationResult } from "@/lib/notifyMutation";
 
@@ -39,11 +36,6 @@ export default function StockInModal({
   onOpenChange,
   defaultBalance,
 }: StockInModalProps) {
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [autoGenerateCodes, setAutoGenerateCodes] = useState(true);
-  const [unitRows, setUnitRows] = useState<TUnitIntakeItem[]>([]);
-
   const { data: itemsData } = useGetItemsQuery({ limit: 100 });
   const items = itemsData?.data || [];
 
@@ -68,6 +60,13 @@ export default function StockInModal({
     { value: "INITIAL_STOCK", label: "Initial Inventory Baseline" },
   ];
 
+  const conditionOptions = [
+    { value: "NEW", label: "Brand New" },
+    { value: "GOOD", label: "Good Working" },
+    { value: "FAIR", label: "Fair / Used" },
+    { value: "DAMAGED", label: "Defect / Damaged" },
+  ];
+
   const methods = useForm<TStockInInput>({
     resolver: zodResolver(stockInSchema),
     defaultValues: {
@@ -76,55 +75,66 @@ export default function StockInModal({
       quantity: 1,
       type: "STOCK_IN",
       notes: "",
+      units: [],
+      photo: null,
     },
   });
+  const { getValues, reset, watch } = methods;
 
-  const watchItemId = methods.watch("inventoryItemId");
-  const watchQty = methods.watch("quantity") || 1;
+  const { fields, replace } = useFieldArray({
+    control: methods.control,
+    name: "units",
+  });
+
+  const watchItemId = watch("inventoryItemId");
+  const watchQty = watch("quantity") || 1;
 
   const selectedItem = items.find((i) => i.id === watchItemId);
-  const isSerialized = selectedItem?.trackingType === "SERIALIZED" || Boolean(selectedItem?.isReturnable);
+  const isSerialized =
+    selectedItem?.trackingType === "SERIALIZED" ||
+    Boolean(selectedItem?.isReturnable);
 
   // Sync unit rows with quantity count when serialized
   useEffect(() => {
     if (!isSerialized) {
-      setUnitRows([]);
+      if ((getValues("units") || []).length > 0) {
+        replace([]);
+      }
       return;
     }
     const targetCount = Math.max(1, Math.min(Number(watchQty) || 1, 100));
-    setUnitRows((prev) => {
-      if (prev.length === targetCount) return prev;
-      if (prev.length < targetCount) {
-        const next = [...prev];
-        for (let i = prev.length; i < targetCount; i++) {
-          next.push({
-            uniqueCode: "",
-            serialNumber: "",
-            condition: "NEW",
-            notes: "",
-          });
-        }
-        return next;
-      }
-      return prev.slice(0, targetCount);
-    });
-  }, [isSerialized, watchQty]);
+    const currentUnits = getValues("units") || [];
+    if (currentUnits.length === targetCount) return;
 
-  const handleUnitChange = (index: number, field: keyof TUnitIntakeItem, val: string) => {
-    setUnitRows((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: val };
-      return copy;
-    });
-  };
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
+    const next = [];
+    for (let i = 0; i < targetCount; i++) {
+      next.push({
+        uniqueCode: "",
+        serialNumber: currentUnits[i]?.serialNumber || "",
+        condition: (currentUnits[i]?.condition || "NEW") as
+          | "NEW"
+          | "GOOD"
+          | "FAIR"
+          | "DAMAGED",
+        notes: currentUnits[i]?.notes || "",
+      });
     }
-  };
+    replace(next);
+  }, [isSerialized, watchQty, replace, getValues]);
+
+  useEffect(() => {
+    if (open && defaultBalance) {
+      reset({
+        inventoryItemId: defaultBalance.inventoryItemId || "",
+        locationId: defaultBalance.locationId || "",
+        quantity: 1,
+        type: "STOCK_IN",
+        notes: "",
+        units: [],
+        photo: null,
+      });
+    }
+  }, [open, defaultBalance?.id, reset]);
 
   const onSubmit = async (values: TStockInInput) => {
     try {
@@ -138,9 +148,9 @@ export default function StockInModal({
       };
 
       if (isSerialized) {
-        payloadData.autoGenerateCodes = autoGenerateCodes;
-        payloadData.units = unitRows.map((u) => ({
-          uniqueCode: u.uniqueCode?.trim() || undefined,
+        payloadData.autoGenerateCodes = true;
+        payloadData.units = (values.units || []).map((u) => ({
+          uniqueCode: undefined, // Always auto-generated on backend
           serialNumber: u.serialNumber?.trim() || undefined,
           condition: u.condition || "NEW",
           notes: u.notes?.trim() || undefined,
@@ -149,16 +159,17 @@ export default function StockInModal({
 
       const formData = new FormData();
       formData.append("data", JSON.stringify(payloadData));
-      if (selectedPhoto) {
-        formData.append("photo", selectedPhoto);
+      if (values.photo && values.photo instanceof File) {
+        formData.append("photo", values.photo);
       }
 
       const res = await stockIn(formData).unwrap();
-      handleMutationResult(res, "Stock received and individual asset units registered successfully.");
+      handleMutationResult(
+        res,
+        "Stock received and individual asset units registered successfully.",
+      );
       methods.reset();
-      setSelectedPhoto(null);
-      setPhotoPreview(null);
-      setUnitRows([]);
+      replace([]);
       onOpenChange(false);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to process stock intake");
@@ -167,19 +178,23 @@ export default function StockInModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
-        <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-emerald-600">
+      <DialogContent className="sm:max-w-2xl! max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-5 pb-3 border-b bg-card! shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-emerald-600 text-xl!">
             <PlusCircle className="size-5" />
             Stock In (Intake / Purchase)
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Record newly received goods, purchase deliveries, and register physical asset units.
+            Record newly received goods, purchase deliveries, and register
+            physical asset units.
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <form
+            onSubmit={methods.handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          >
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <FormSelect
                 name="inventoryItemId"
@@ -216,90 +231,75 @@ export default function StockInModal({
 
               {/* Serialized / Returnable Asset Unit Details */}
               {isSerialized && (
-                <div className="border rounded-lg p-3 bg-muted/20 space-y-3">
+                <div className="border rounded-lg p-3.5 bg-muted/20 space-y-3">
                   <div className="flex items-center justify-between gap-2 border-b pb-2">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
                       <ShieldCheck className="size-4" />
-                      <span>Returnable Asset Unit Registration ({unitRows.length} {unitRows.length === 1 ? "unit" : "units"})</span>
+                      <span>
+                        Returnable Asset Unit Registration ({fields.length}{" "}
+                        {fields.length === 1 ? "unit" : "units"})
+                      </span>
                     </div>
 
-                    <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
-                      <Checkbox
-                        checked={autoGenerateCodes}
-                        onCheckedChange={(checked) => setAutoGenerateCodes(Boolean(checked))}
-                        className="size-3.5"
-                      />
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground select-none">
                       <Sparkles className="size-3 text-amber-500" />
-                      <span>Auto-generate Asset Codes</span>
-                    </label>
+                      <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                        Auto-generated Asset Codes
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
-                    {unitRows.map((row, idx) => (
+                  <div className=" space-y-3 pr-1">
+                    {fields.map((field, idx) => (
                       <div
-                        key={idx}
-                        className="grid grid-cols-1 sm:grid-cols-12 gap-2 p-2.5 rounded-md border bg-card text-xs items-center"
+                        key={field.id}
+                        className="p-3 rounded-lg border bg-card space-y-2 shadow-2xs"
                       >
-                        <div className="sm:col-span-1 text-center font-mono font-bold text-muted-foreground">
-                          #{idx + 1}
+                        <div className="flex items-center justify-between border-b pb-1.5">
+                          <span className="font-mono font-bold text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">
+                            Unit #{idx + 1}
+                          </span>
+                          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+                            <Sparkles className="size-3" />
+                            Auto-assigned Asset Code
+                          </span>
                         </div>
 
-                        <div className="sm:col-span-4">
-                          <label className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mb-0.5">
-                            <Hash className="size-2.5" />
-                            Asset Tag / Code
-                          </label>
-                          {autoGenerateCodes ? (
-                            <div className="h-8 px-2 rounded-md border bg-muted/40 text-muted-foreground flex items-center text-[11px] font-mono">
-                              (Auto-generated)
-                            </div>
-                          ) : (
-                            <Input
-                              placeholder="e.g. LAP-00101"
-                              value={row.uniqueCode || ""}
-                              onChange={(e) => handleUnitChange(idx, "uniqueCode", e.target.value)}
-                              className="h-8 text-xs font-mono bg-background"
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-start">
+                          <div className="sm:col-span-4">
+                            <FormInput
+                              name={`units.${idx}.uniqueCode`}
+                              label="Asset Tag / Code"
+                              placeholder="(Auto-generated)"
+                              disabled
+                              startIcon={{ icon: Hash }}
                             />
-                          )}
-                        </div>
+                          </div>
 
-                        <div className="sm:col-span-4">
-                          <label className="text-[10px] text-muted-foreground font-medium mb-0.5 block">
-                            Hardware Serial #
-                          </label>
-                          <Input
-                            placeholder="e.g. SN-998822"
-                            value={row.serialNumber || ""}
-                            onChange={(e) => handleUnitChange(idx, "serialNumber", e.target.value)}
-                            className="h-8 text-xs font-mono bg-background"
-                          />
-                        </div>
+                          <div className="sm:col-span-5">
+                            <FormInput
+                              name={`units.${idx}.serialNumber`}
+                              label="Hardware Serial #"
+                              placeholder="e.g. SN-998822"
+                            />
+                          </div>
 
-                        <div className="sm:col-span-3">
-                          <label className="text-[10px] text-muted-foreground font-medium mb-0.5 block">
-                            Condition
-                          </label>
-                          <Select
-                            value={row.condition || "NEW"}
-                            onValueChange={(val) => handleUnitChange(idx, "condition", val)}
-                          >
-                            <SelectTrigger className="h-8 text-xs bg-background">
-                              <SelectValue placeholder="Condition" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="NEW">Brand New</SelectItem>
-                              <SelectItem value="GOOD">Good Working</SelectItem>
-                              <SelectItem value="FAIR">Fair / Used</SelectItem>
-                              <SelectItem value="DAMAGED">Defect / Damaged</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="sm:col-span-3">
+                            <FormSelect
+                              name={`units.${idx}.condition`}
+                              label="Condition"
+                              options={conditionOptions}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   <p className="text-[11px] text-muted-foreground italic">
-                    Each physical unit will be uniquely registered in storage and available for requisition distribution and return tracking.
+                    Each physical unit will be uniquely registered in storage
+                    and available for requisition distribution and return
+                    tracking.
                   </p>
                 </div>
               )}
@@ -311,32 +311,15 @@ export default function StockInModal({
               />
 
               {/* Photo / Invoice Upload */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-foreground">
-                  Attachment (Delivery Note / Invoice Photo)
-                </label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 border rounded-md border-dashed cursor-pointer hover:bg-muted/50 text-xs text-muted-foreground transition-colors">
-                    <Upload className="size-4" />
-                    <span>{selectedPhoto ? selectedPhoto.name : "Upload image"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePhotoChange}
-                    />
-                  </label>
-                  {photoPreview && (
-                    <div className="relative size-10 rounded border overflow-hidden shrink-0">
-                      <img
-                        src={photoPreview}
-                        alt="Preview"
-                        className="size-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <FormFileUpload
+                name="photo"
+                label="Attachment (Delivery Note / Invoice Photo)"
+                description="Upload evidence photo of physical delivery note, invoice, or received package"
+                mode="image"
+                maxSizeMB={5}
+                height="h-28"
+                className="dark:bg-card/40"
+              />
             </div>
 
             <DialogFooter className="p-4 border-t bg-card shrink-0">
@@ -363,4 +346,3 @@ export default function StockInModal({
     </Dialog>
   );
 }
-

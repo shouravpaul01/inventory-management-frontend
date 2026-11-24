@@ -27,8 +27,12 @@ import {
   QrCode,
   Layers,
   RotateCcw,
+  Eye,
+  ShoppingBag,
+  CheckCircle2,
 } from "lucide-react";
 import { usePermission } from "@/hooks/usePermission";
+import { useRequisitionCart } from "@/context/RequisitionCartContext";
 import Link from "next/link";
 
 interface ItemTableProps {
@@ -36,6 +40,8 @@ interface ItemTableProps {
   isLoading: boolean;
   onEdit: (item: TInventoryItem) => void;
   onDelete: (id: string, name: string) => void;
+  onViewDetails?: (item: TInventoryItem) => void;
+  stockMap?: Record<string, number>;
 }
 
 export default function ItemTable({
@@ -43,11 +49,15 @@ export default function ItemTable({
   isLoading,
   onEdit,
   onDelete,
+  onViewDetails,
+  stockMap = {},
 }: ItemTableProps) {
   const { can } = usePermission();
+  const { cart, addToCart } = useRequisitionCart();
 
   const canUpdate = can("inventory.update");
   const canDelete = can("inventory.delete");
+  const canRequest = can("requisition.create");
 
   return (
     <div className="rounded-xl border border-border/70 bg-card overflow-hidden shadow-2xs">
@@ -59,18 +69,16 @@ export default function ItemTable({
             <TableHead className="hidden md:table-cell font-semibold text-xs">
               Category
             </TableHead>
-            <TableHead className="font-semibold text-xs">Tracking</TableHead>
+            <TableHead className="font-semibold text-xs">Tracking & Stock</TableHead>
             <TableHead className="hidden sm:table-cell font-semibold text-xs">
               UoM
             </TableHead>
             <TableHead className="hidden lg:table-cell font-semibold text-xs">
               Min / Reorder
             </TableHead>
-            {(canUpdate || canDelete) && (
-              <TableHead className="w-[70px] text-right font-semibold text-xs">
-                Actions
-              </TableHead>
-            )}
+            <TableHead className="w-[110px] text-right font-semibold text-xs">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
 
@@ -116,7 +124,7 @@ export default function ItemTable({
                 </TableCell>
 
                 <TableCell>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Badge
                       variant={
                         item.trackingType === "SERIALIZED"
@@ -125,10 +133,14 @@ export default function ItemTable({
                       }
                       className="text-[10px] font-normal"
                     >
-                      {item.trackingType === "SERIALIZED" ? "Serialized Unit" : "Bulk Stock"}
+                      {item.trackingType === "SERIALIZED" ? "Serialized" : "Bulk"}
                     </Badge>
 
-                    {item.isReturnable && (
+                    {item.defaultIssuePolicy === "GIFT" ? (
+                      <Badge className="bg-purple-600 text-white text-[10px] py-0 px-1 font-normal">
+                        Gift
+                      </Badge>
+                    ) : item.isReturnable || item.defaultIssuePolicy === "TEMPORARY" ? (
                       <Badge
                         variant="secondary"
                         className="text-[10px] font-normal text-amber-700 bg-amber-50 dark:text-amber-300 dark:bg-amber-950/60"
@@ -137,7 +149,34 @@ export default function ItemTable({
                         <RotateCcw className="size-2.5 mr-0.5" />
                         Loan
                       </Badge>
-                    )}
+                    ) : null}
+
+                    {/* Stock Count Pill */}
+                    {(() => {
+                      const avail =
+                        stockMap[item.id] ??
+                        item.availableStock ??
+                        item.totalStock ??
+                        0;
+                      if (avail > 0) {
+                        return (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] border-emerald-500/40 text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 font-mono py-0 px-1"
+                          >
+                            {avail} {item.unitName || "unit"}
+                          </Badge>
+                        );
+                      }
+                      return (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/20 py-0 px-1"
+                        >
+                          Out of stock
+                        </Badge>
+                      );
+                    })()}
                   </div>
                 </TableCell>
 
@@ -149,8 +188,20 @@ export default function ItemTable({
                   {item.minimumStock} / {item.reorderLevel}
                 </TableCell>
 
-                {(canUpdate || canDelete) && (
-                  <TableCell className="text-right">
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    {onViewDetails && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onViewDetails(item)}
+                        className="size-8 text-muted-foreground hover:text-foreground"
+                        title="View Full Item Details"
+                      >
+                        <Eye className="size-4" />
+                      </Button>
+                    )}
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -161,7 +212,25 @@ export default function ItemTable({
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuContent align="end" className="w-44">
+                        {onViewDetails && (
+                          <DropdownMenuItem
+                            onClick={() => onViewDetails(item)}
+                            className="cursor-pointer"
+                          >
+                            <Eye className="mr-2 size-4" />
+                            <span>View Details</span>
+                          </DropdownMenuItem>
+                        )}
+                        {canRequest && (
+                          <DropdownMenuItem
+                            onClick={() => addToCart(item, 1)}
+                            className="cursor-pointer text-primary"
+                          >
+                            <ShoppingBag className="mr-2 size-4" />
+                            <span>Add to Request Cart</span>
+                          </DropdownMenuItem>
+                        )}
                         {canUpdate && (
                           <DropdownMenuItem
                             onClick={() => onEdit(item)}
@@ -193,8 +262,8 @@ export default function ItemTable({
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </TableCell>
-                )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))
           )}

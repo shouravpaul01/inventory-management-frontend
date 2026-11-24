@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -15,12 +15,16 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/shared/form/FormInput";
 import { FormTextarea } from "@/components/shared/form/FormTextarea";
 import { FormSelect } from "@/components/shared/form/FormSelect";
+import { FormFileUpload } from "@/components/shared/form/FormFileUpload";
 import { useTransferStockMutation } from "@/redux/api/stockApi";
 import { useGetItemsQuery } from "@/redux/api/itemApi";
 import { useGetStockLocationsQuery } from "@/redux/api/locationApi";
-import { stockTransferSchema, TStockTransferInput } from "@/validation/stock.validation";
+import {
+  stockTransferSchema,
+  TStockTransferInput,
+} from "@/validation/stock.validation";
 import { toast } from "sonner";
-import { Loader2, ArrowRightLeft, Upload } from "lucide-react";
+import { Loader2, ArrowRightLeft } from "lucide-react";
 import { TStockBalance } from "@/type";
 import { handleMutationResult } from "@/lib/notifyMutation";
 import SerializedUnitPicker from "./SerializedUnitPicker";
@@ -36,8 +40,6 @@ export default function StockTransferModal({
   onOpenChange,
   defaultBalance,
 }: StockTransferModalProps) {
-  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedUnitIds, setSelectedUnitIds] = useState<string[]>([]);
 
   const { data: itemsData } = useGetItemsQuery({ limit: 100 });
@@ -66,21 +68,22 @@ export default function StockTransferModal({
       toLocationId: "",
       quantity: 1,
       notes: "",
+      photo: null,
     },
   });
-  const { reset, watch, setValue } = methods;
+  const { reset, watch, setValue, getValues } = methods;
 
   const watchItemId = watch("inventoryItemId");
   const watchFromLocationId = watch("fromLocationId");
 
   const selectedItem = items.find((i) => i.id === watchItemId);
-  const isSerialized = selectedItem?.trackingType === "SERIALIZED" || Boolean(selectedItem?.isReturnable);
+  const isSerialized =
+    selectedItem?.trackingType === "SERIALIZED" ||
+    Boolean(selectedItem?.isReturnable);
 
   useEffect(() => {
     if (!open) {
-      setSelectedPhoto(null);
-      setPhotoPreview(null);
-      setSelectedUnitIds([]);
+      setSelectedUnitIds((prev) => (prev.length === 0 ? prev : []));
       return;
     }
     if (defaultBalance) {
@@ -90,30 +93,33 @@ export default function StockTransferModal({
         toLocationId: "",
         quantity: 1,
         notes: "",
+        photo: null,
       });
-      setSelectedUnitIds([]);
+      setSelectedUnitIds((prev) => (prev.length === 0 ? prev : []));
     }
-  }, [defaultBalance?.id, open, reset]);
+  }, [defaultBalance?.id, open]);
 
   // Reset selected unit IDs if item or source location changes
+  const prevRef = useRef({ itemId: watchItemId, locId: watchFromLocationId });
   useEffect(() => {
-    setSelectedUnitIds([]);
+    if (
+      prevRef.current.itemId !== watchItemId ||
+      prevRef.current.locId !== watchFromLocationId
+    ) {
+      prevRef.current = { itemId: watchItemId, locId: watchFromLocationId };
+      setSelectedUnitIds((prev) => (prev.length === 0 ? prev : []));
+    }
   }, [watchItemId, watchFromLocationId]);
 
   // Sync quantity form value with selected units count when serialized
   useEffect(() => {
     if (isSerialized) {
-      setValue("quantity", selectedUnitIds.length > 0 ? selectedUnitIds.length : 1);
+      const targetQty = selectedUnitIds.length > 0 ? selectedUnitIds.length : 1;
+      if (Number(getValues("quantity")) !== targetQty) {
+        setValue("quantity", targetQty);
+      }
     }
-  }, [isSerialized, selectedUnitIds, setValue]);
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedPhoto(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    }
-  };
+  }, [isSerialized, selectedUnitIds, setValue, getValues]);
 
   const onSubmit = async (values: TStockTransferInput) => {
     if (values.fromLocationId === values.toLocationId) {
@@ -122,7 +128,9 @@ export default function StockTransferModal({
     }
 
     if (isSerialized && selectedUnitIds.length === 0) {
-      toast.error("Please select at least one serialized unit code to transfer.");
+      toast.error(
+        "Please select at least one serialized unit code to transfer.",
+      );
       return;
     }
 
@@ -131,7 +139,9 @@ export default function StockTransferModal({
         inventoryItemId: values.inventoryItemId,
         fromLocationId: values.fromLocationId,
         toLocationId: values.toLocationId,
-        quantity: isSerialized ? selectedUnitIds.length : Number(values.quantity),
+        quantity: isSerialized
+          ? selectedUnitIds.length
+          : Number(values.quantity),
         notes: values.notes || undefined,
       };
 
@@ -141,15 +151,16 @@ export default function StockTransferModal({
 
       const formData = new FormData();
       formData.append("data", JSON.stringify(payloadData));
-      if (selectedPhoto) {
-        formData.append("photo", selectedPhoto);
+      if (values.photo && values.photo instanceof File) {
+        formData.append("photo", values.photo);
       }
 
       const res = await transferStock(formData).unwrap();
-      handleMutationResult(res, "Stock transferred successfully between locations.");
+      handleMutationResult(
+        res,
+        "Stock transferred successfully between locations.",
+      );
       methods.reset();
-      setSelectedPhoto(null);
-      setPhotoPreview(null);
       setSelectedUnitIds([]);
       onOpenChange(false);
     } catch (err: any) {
@@ -159,19 +170,23 @@ export default function StockTransferModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-2xl! max-h-[90vh] p-0 gap-0 overflow-hidden flex flex-col">
         <DialogHeader className="p-5 pb-3 border-b bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2 text-blue-600">
             <ArrowRightLeft className="size-5" />
             Internal Stock Transfer
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Relocate stock or serialized assets between warehouses, rooms, and department stores.
+            Relocate stock or serialized assets between warehouses, rooms, and
+            department stores.
           </DialogDescription>
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <form
+            onSubmit={methods.handleSubmit(onSubmit)}
+            className="flex flex-col flex-1 min-h-0 overflow-hidden"
+          >
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               <FormSelect
                 name="inventoryItemId"
@@ -225,32 +240,15 @@ export default function StockTransferModal({
               />
 
               {/* Photo / Transfer Gate Pass Upload */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-foreground">
-                  Attachment (Gate Pass / Handover Slip)
-                </label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 border rounded-md border-dashed cursor-pointer hover:bg-muted/50 text-xs text-muted-foreground transition-colors">
-                    <Upload className="size-4" />
-                    <span>{selectedPhoto ? selectedPhoto.name : "Upload image"}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePhotoChange}
-                    />
-                  </label>
-                  {photoPreview && (
-                    <div className="relative size-10 rounded border overflow-hidden shrink-0">
-                      <img
-                        src={photoPreview}
-                        alt="Preview"
-                        className="size-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
+              <FormFileUpload
+                name="photo"
+                label="Attachment (Gate Pass / Handover Slip)"
+                description="Upload evidence photo of transfer challan, gate pass, or signed handover slip"
+                mode="image"
+                maxSizeMB={5}
+                height="h-28"
+                className="dark:bg-card/40"
+              />
             </div>
 
             <DialogFooter className="p-4 border-t bg-card shrink-0">
@@ -264,11 +262,16 @@ export default function StockTransferModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isLoading || (isSerialized && selectedUnitIds.length === 0)}
+                disabled={
+                  isLoading || (isSerialized && selectedUnitIds.length === 0)
+                }
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {isLoading && <Loader2 className="mr-2 size-4 animate-spin" />}
-                Confirm Transfer {isSerialized && selectedUnitIds.length > 0 ? `(${selectedUnitIds.length} units)` : ""}
+                Confirm Transfer{" "}
+                {isSerialized && selectedUnitIds.length > 0
+                  ? `(${selectedUnitIds.length} units)`
+                  : ""}
               </Button>
             </DialogFooter>
           </form>
@@ -277,4 +280,3 @@ export default function StockTransferModal({
     </Dialog>
   );
 }
-

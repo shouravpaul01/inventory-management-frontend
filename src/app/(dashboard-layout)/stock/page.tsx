@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Boxes,
   PlusCircle,
@@ -23,7 +23,7 @@ import StockInModal from "@/components/stock/StockInModal";
 import StockOutModal from "@/components/stock/StockOutModal";
 import StockTransferModal from "@/components/stock/StockTransferModal";
 import StockAdjustModal from "@/components/stock/StockAdjustModal";
-import StatCard from "@/components/shared/StatCard";
+import StatCard, { StatCardVariant } from "@/components/shared/StatCard";
 import { useGetStockBalancesQuery } from "@/redux/api/stockApi";
 import { useGetItemsQuery } from "@/redux/api/itemApi";
 import { useGetStockLocationsQuery } from "@/redux/api/locationApi";
@@ -48,7 +48,9 @@ export default function StockBalancesPage() {
   const [stockOutOpen, setStockOutOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
-  const [selectedBalance, setSelectedBalance] = useState<TStockBalance | null>(null);
+  const [selectedBalance, setSelectedBalance] = useState<TStockBalance | null>(
+    null,
+  );
 
   // Reference data
   const { data: itemsData } = useGetItemsQuery({ limit: 100 });
@@ -75,10 +77,48 @@ export default function StockBalancesPage() {
   };
 
   // Metrics
-  const totalAvailable = balances.reduce((acc, b) => acc + (b.availableQuantity || 0), 0);
+  const totalAvailable = balances.reduce(
+    (acc, b) => acc + (b.availableQuantity || 0),
+    0,
+  );
   const lowStockCount = balances.filter(
-    (b) => b.availableQuantity <= (b.inventoryItem?.minimumStock ?? 0)
+    (b) => b.availableQuantity <= (b.inventoryItem?.minimumStock ?? 0),
   ).length;
+
+  const statCards: Array<{
+    title: string;
+    value: string | number;
+    icon: any;
+    variant: StatCardVariant;
+  }> = useMemo(
+    () => [
+      {
+        title: "Active Stock Lines",
+        value: meta.total,
+        icon: Boxes,
+        variant: "primary",
+      },
+      {
+        title: "Total Available Units",
+        value: totalAvailable,
+        icon: CheckCircle2,
+        variant: "emerald",
+      },
+      {
+        title: "Low Stock Alerts",
+        value: lowStockCount,
+        icon: AlertTriangle,
+        variant: "amber",
+      },
+      {
+        title: "Stock Locations",
+        value: locations.length,
+        icon: MapPin,
+        variant: "sky",
+      },
+    ],
+    [meta.total, totalAvailable, lowStockCount, locations.length],
+  );
 
   const handleStockIn = (balance?: TStockBalance) => {
     setSelectedBalance(balance || null);
@@ -146,41 +186,20 @@ export default function StockBalancesPage() {
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Active Stock Lines"
-          value={meta.total}
-          icon={Boxes}
-          variant="primary"
-          isLoading={isLoading}
-        />
-
-        <StatCard
-          title="Total Available Units"
-          value={totalAvailable}
-          icon={CheckCircle2}
-          variant="emerald"
-          isLoading={isLoading}
-        />
-
-        <StatCard
-          title="Low Stock Alerts"
-          value={lowStockCount}
-          icon={AlertTriangle}
-          variant="amber"
-          isLoading={isLoading}
-        />
-
-        <StatCard
-          title="Stock Locations"
-          value={locations.length}
-          icon={MapPin}
-          variant="sky"
-          isLoading={isLoading}
-        />
+        {statCards.map((card) => (
+          <StatCard
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            icon={card.icon}
+            variant={card.variant}
+            isLoading={isLoading}
+          />
+        ))}
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-col lg:flex-row gap-3">
+      <div className="flex flex-col lg:flex-row gap-3 bg-slate-100 border rounded-lg p-4 shadow-2xs">
         <div className="flex-1">
           <SearchInput
             placeholder="Search stock by item name, code, or location..."

@@ -18,9 +18,12 @@ import {
 } from "@/redux/api/requisitionApi";
 import { useGetDepartmentsQuery } from "@/redux/api/departmentApi";
 import { usePermission } from "@/hooks/usePermission";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useDebounce } from "@/hooks/useDebounce";
 import { TRequisition, TRequisitionStatus } from "@/type";
 import { toast } from "sonner";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Layers } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +35,12 @@ import {
 
 export default function RequisitionsPage() {
   const { can } = usePermission();
+  const { user, isSuperAdmin } = useCurrentUser();
+
+  const canApprove = isSuperAdmin || can("requisition.approve");
+  const [scope, setScope] = useState<"all" | "my_requests">(() => {
+    return canApprove ? "all" : "my_requests";
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 400);
@@ -64,6 +73,7 @@ export default function RequisitionsPage() {
     searchTerm: debouncedSearch || undefined,
     status: (status as TRequisitionStatus) || undefined,
     departmentId: departmentId || undefined,
+    requesterId: scope === "my_requests" ? user?.id : undefined,
     isTemporary: isTemporary === "true" ? true : isTemporary === "false" ? false : undefined,
     page,
     limit,
@@ -128,8 +138,12 @@ export default function RequisitionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <SectionHeader
-          title="Material Requisitions"
-          description="Create, monitor, and track multi-line departmental inventory requests and temporary loans."
+          title={scope === "my_requests" ? "My Material Requisitions & Orders" : "All Material Requisitions"}
+          description={
+            scope === "my_requests"
+              ? "Track your submitted material requisitions, monitor approval stages, review feedback, or submit new orders."
+              : "Create, monitor, and track multi-line departmental inventory requests and temporary loans."
+          }
         />
 
         {can("requisition.create") && (
@@ -141,6 +155,29 @@ export default function RequisitionsPage() {
           </Link>
         )}
       </div>
+
+      {/* Scope Tabs */}
+      <Tabs
+        value={scope}
+        onValueChange={(val: any) => {
+          setScope(val);
+          setPage(1);
+        }}
+        className="w-full"
+      >
+        <TabsList className="bg-muted/60 p-1">
+          <TabsTrigger value="my_requests" className="gap-2 text-xs">
+            <User className="size-3.5" />
+            <span>My Orders & Requisitions</span>
+          </TabsTrigger>
+          {canApprove && (
+            <TabsTrigger value="all" className="gap-2 text-xs">
+              <Layers className="size-3.5" />
+              <span>All Department Orders</span>
+            </TabsTrigger>
+          )}
+        </TabsList>
+      </Tabs>
 
       {/* Filters Bar */}
       <div className="flex flex-col lg:flex-row gap-3">

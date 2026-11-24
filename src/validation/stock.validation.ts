@@ -17,6 +17,7 @@ export const stockInSchema = z.object({
   notes: z.string().optional(),
   autoGenerateCodes: z.boolean().optional(),
   units: z.array(unitIntakeItemSchema).optional(),
+  photo: z.any().optional(),
 });
 
 export const stockOutSchema = z.object({
@@ -26,6 +27,7 @@ export const stockOutSchema = z.object({
   unitIds: z.array(z.string()).optional(),
   type: z.enum(["STOCK_OUT", "DAMAGE", "LOSS", "DISPOSAL", "GIFT"]),
   notes: z.string().optional(),
+  photo: z.any().optional(),
 });
 
 export const stockTransferSchema = z.object({
@@ -36,6 +38,7 @@ export const stockTransferSchema = z.object({
   inventoryUnitId: z.string().optional(),
   unitIds: z.array(z.string()).optional(),
   notes: z.string().optional(),
+  photo: z.any().optional(),
 });
 
 export const stockAdjustSchema = z.object({
@@ -43,6 +46,7 @@ export const stockAdjustSchema = z.object({
   locationId: z.string().min(1, "Stock location is required"),
   newQuantity: z.number().int().min(0, "Quantity cannot be negative"),
   notes: z.string().min(3, "Mandatory reason for audit reconciliation (minimum 3 characters)"),
+  photo: z.any().optional(),
 });
 
 export type TUnitIntakeItem = z.infer<typeof unitIntakeItemSchema>;

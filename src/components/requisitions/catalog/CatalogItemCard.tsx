@@ -19,14 +19,20 @@ import {
   Clock,
   CheckCircle2,
   Tag,
+  Info,
 } from "lucide-react";
 
 interface CatalogItemCardProps {
   item: TInventoryItem;
   stockCount?: number;
+  onViewDetails?: (item: TInventoryItem) => void;
 }
 
-export default function CatalogItemCard({ item, stockCount }: CatalogItemCardProps) {
+export default function CatalogItemCard({
+  item,
+  stockCount,
+  onViewDetails,
+}: CatalogItemCardProps) {
   const { cart, addToCart, updateQuantity, removeFromCart } = useRequisitionCart();
   const [selectedQty, setSelectedQty] = useState(1);
 
@@ -80,7 +86,12 @@ export default function CatalogItemCard({ item, stockCount }: CatalogItemCardPro
       }`}
     >
       {/* Visual Header / Image Container */}
-      <div className="relative h-44 w-full overflow-hidden rounded-t-xl bg-muted/40 border-b border-border/40">
+      <div
+        onClick={() => onViewDetails?.(item)}
+        className={`relative h-44 w-full overflow-hidden rounded-t-xl bg-muted/40 border-b border-border/40 ${
+          onViewDetails ? "cursor-pointer" : ""
+        }`}
+      >
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
@@ -151,9 +162,26 @@ export default function CatalogItemCard({ item, stockCount }: CatalogItemCardPro
       <div className="flex flex-1 flex-col p-4 space-y-2.5">
         <div className="space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+            <h3
+              onClick={() => onViewDetails?.(item)}
+              className={`font-semibold text-sm text-foreground line-clamp-1 group-hover:text-primary transition-colors ${
+                onViewDetails ? "cursor-pointer" : ""
+              }`}
+            >
               {item.name}
             </h3>
+            {onViewDetails && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onViewDetails(item)}
+                className="size-6 text-muted-foreground hover:text-foreground shrink-0 rounded-md"
+                title="View full item details"
+              >
+                <Info className="size-3.5" />
+              </Button>
+            )}
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
