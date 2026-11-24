@@ -209,6 +209,8 @@ export default function RequisitionsPage() {
                 { label: "Approved", value: "APPROVED" },
                 { label: "Partially Approved", value: "PARTIALLY_APPROVED" },
                 { label: "Rejected", value: "REJECTED" },
+                { label: "Partially Issued", value: "PARTIALLY_FULFILLED" },
+                { label: "Issued", value: "FULFILLED" },
                 { label: "Cancelled", value: "CANCELLED" },
               ]}
               includeAllOption

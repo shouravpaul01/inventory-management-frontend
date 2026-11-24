@@ -50,7 +50,7 @@ export default function DistributionModal({
 
   // Query approved requisitions ready for fulfillment
   const { data: reqsData } = useGetRequisitionsQuery({
-    status: "APPROVED",
+    "status[in]": "APPROVED,PARTIALLY_APPROVED,PARTIALLY_FULFILLED",
     limit: 50,
   });
   const approvedReqs = reqsData?.data || [];
@@ -65,8 +65,8 @@ export default function DistributionModal({
   const items = itemsData?.data || [];
 
   const { data: unitsData } = useGetUnitsQuery({
-    status: "AVAILABLE",
-    limit: 100,
+    status: "IN_STOCK",
+    limit: 200,
   });
   const availableUnits = unitsData?.data || [];
 
@@ -85,12 +85,9 @@ export default function DistributionModal({
     label: `${loc.name} (${loc.code})`,
   }));
 
-  const itemOptions = items.map((i) => ({
-    value: i.id,
-    label: `${i.name} (${i.code})`,
-  }));
 
   const unitOptions = availableUnits.map((u) => ({
+    itemId: u.inventoryItemId,
     value: u.id,
     label: `${u.uniqueCode} - ${u.inventoryItem?.name || "Unit"} (${u.condition})`,
   }));
@@ -135,6 +132,20 @@ export default function DistributionModal({
   const { control, watch, setValue, handleSubmit, reset } = methods;
   const selectedReqId = watch("requisitionId");
 
+  const selectedRequisition = approvedReqs.find((r) => r.id === selectedReqId);
+  const requisitionItemIds = new Set(
+    (selectedRequisition?.lines || selectedRequisition?.items || []).map(
+      (rl) => rl.inventoryItemId
+    )
+  );
+  // Only items that belong to the selected requisition can be issued against it
+  const itemOptions = items
+    .filter((i) => !selectedRequisition || requisitionItemIds.has(i.id))
+    .map((i) => ({
+      value: i.id,
+      label: `${i.name} (${i.code})`,
+    }));
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "lines",
@@ -154,17 +165,33 @@ export default function DistributionModal({
         }
 
         const reqLines = foundReq.lines || foundReq.items || [];
-        if (reqLines.length > 0) {
-          const mappedLines = reqLines.map((rl) => ({
+        const mappedLines: TCreateDistributionInput["lines"] = [];
+        for (const rl of reqLines) {
+          // Only the part of the approved quantity that has not been issued yet
+          const remaining = (rl.approvedQty || 0) - (rl.issuedQty || 0);
+          if (remaining <= 0) continue;
+
+          const base = {
             requisitionLineId: rl.id,
             inventoryItemId: rl.inventoryItemId,
             inventoryUnitId: "",
             locationId: locations[0]?.id || "",
-            quantity: rl.approvedQty > 0 ? rl.approvedQty : rl.requestedQty,
             issueMode: (rl.requestedIssuePolicy || "PERMANENT") as "PERMANENT" | "TEMPORARY" | "GIFT",
             condition: "GOOD" as const,
             remarks: rl.remarks || "",
-          }));
+          };
+
+          const trackingType = (rl.inventoryItem || rl.item)?.trackingType;
+          if (trackingType === "SERIALIZED") {
+            // One physical unit per line
+            for (let n = 0; n < remaining; n++) {
+              mappedLines.push({ ...base, quantity: 1 });
+            }
+          } else {
+            mappedLines.push({ ...base, quantity: remaining });
+          }
+        }
+        if (mappedLines.length > 0) {
           setValue("lines", mappedLines);
         }
       }
@@ -183,7 +210,13 @@ export default function DistributionModal({
           : undefined,
         remarks: values.remarks || undefined,
         lines: values.lines.map((l) => ({
-          requisitionLineId: l.requisitionLineId || undefined,
+          // Lines added by hand are matched to the requisition line of the same item
+          requisitionLineId:
+            l.requisitionLineId ||
+            (selectedRequisition?.lines || selectedRequisition?.items || []).find(
+              (rl) => rl.inventoryItemId === l.inventoryItemId
+            )?.id ||
+            undefined,
           inventoryItemId: l.inventoryItemId,
           inventoryUnitId: l.inventoryUnitId || undefined,
           locationId: l.locationId,
@@ -345,7 +378,9 @@ export default function DistributionModal({
                         name={`lines.${index}.inventoryUnitId`}
                         label="Specific Asset Unit Tag (If Serialized)"
                         placeholder="Optional physical unit"
-                        options={unitOptions}
+                        options={unitOptions.filter(
+                          (u) => u.itemId === watch(`lines.${index}.inventoryItemId`)
+                        )}
                       />
 
                       <FormSelect

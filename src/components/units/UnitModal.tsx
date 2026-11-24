@@ -69,7 +69,6 @@ export default function UnitModal({
     { value: "NEW", label: "New (Brand New / Unused)" },
     { value: "GOOD", label: "Good (Fully functional, minimal wear)" },
     { value: "FAIR", label: "Fair (Functional with cosmetic wear)" },
-    { value: "POOR", label: "Poor (Degraded performance / maintenance needed)" },
     { value: "DAMAGED", label: "Damaged (Inoperable / requires repair)" },
   ];
 

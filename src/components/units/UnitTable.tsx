@@ -41,14 +41,15 @@ export default function UnitTable({
 
   const getStatusBadge = (status: TUnitStatus) => {
     switch (status) {
-      case "AVAILABLE":
+      case "IN_STOCK":
         return (
           <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600 text-[10px] gap-1">
             <CheckCircle2 className="size-2.5" />
-            Available
+            In Stock
           </Badge>
         );
-      case "ALLOCATED":
+      case "RESERVED":
+      case "RETURN_PENDING":
       case "ISSUED":
         return (
           <Badge variant="secondary" className="bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300 text-[10px] gap-1">
@@ -57,7 +58,6 @@ export default function UnitTable({
           </Badge>
         );
       case "MAINTENANCE":
-      case "UNDER_REPAIR":
         return (
           <Badge variant="secondary" className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 text-[10px] gap-1">
             <Wrench className="size-2.5" />
@@ -104,7 +104,8 @@ export default function UnitTable({
             Fair
           </Badge>
         );
-      case "POOR":
+      case "LOST":
+      case "DISPOSED":
       case "DAMAGED":
         return (
           <Badge variant="outline" className="text-rose-700 border-rose-600/40 text-[10px]">

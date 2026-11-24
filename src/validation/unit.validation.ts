@@ -4,7 +4,7 @@ export const createUnitSchema = z.object({
   inventoryItemId: z.string().min(1, "Inventory Item selection is required"),
   uniqueCode: z.string().optional(),
   serialNumber: z.string().optional(),
-  condition: z.enum(["NEW", "GOOD", "FAIR", "POOR", "DAMAGED"]),
+  condition: z.enum(["NEW", "GOOD", "FAIR", "DAMAGED"]),
   locationId: z.string().optional(),
   purchaseDate: z.string().optional(),
   warrantyEndDate: z.string().optional(),
@@ -15,7 +15,7 @@ export const batchCreateUnitSchema = z.object({
   inventoryItemId: z.string().min(1, "Inventory Item selection is required"),
   count: z.number().int().min(1, "At least 1 unit").max(100, "Maximum 100 units per batch"),
   locationId: z.string().optional(),
-  condition: z.enum(["NEW", "GOOD", "FAIR", "POOR", "DAMAGED"]),
+  condition: z.enum(["NEW", "GOOD", "FAIR", "DAMAGED"]),
   notes: z.string().optional(),
   purchaseDate: z.string().optional(),
   warrantyEndDate: z.string().optional(),
@@ -23,7 +23,7 @@ export const batchCreateUnitSchema = z.object({
 
 export const updateUnitSchema = z.object({
   serialNumber: z.string().optional(),
-  condition: z.enum(["NEW", "GOOD", "FAIR", "POOR", "DAMAGED"]).optional(),
+  condition: z.enum(["NEW", "GOOD", "FAIR", "DAMAGED", "LOST", "DISPOSED"]).optional(),
   locationId: z.string().optional(),
   notes: z.string().optional(),
   warrantyEndDate: z.string().optional(),

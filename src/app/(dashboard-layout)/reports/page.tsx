@@ -395,7 +395,7 @@ export default function ReportsPage() {
                 <span className="font-bold text-foreground">{overview?.serializedAssets?.total ?? 0}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">In Warehouse / Storage:</span>
+                <span className="text-muted-foreground">In Store / Storage:</span>
                 <span className="font-bold text-emerald-600">{overview?.serializedAssets?.inStock ?? 0}</span>
               </div>
               <div className="flex justify-between">

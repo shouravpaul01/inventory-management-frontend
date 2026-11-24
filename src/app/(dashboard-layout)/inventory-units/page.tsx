@@ -249,11 +249,12 @@ export default function InventoryUnitsPage() {
                 setPage(1);
               }}
               options={[
-                { label: "Available", value: "AVAILABLE" },
-                { label: "Allocated", value: "ALLOCATED" },
+                { label: "In Stock", value: "IN_STOCK" },
+                { label: "Reserved", value: "RESERVED" },
                 { label: "Issued", value: "ISSUED" },
                 { label: "Maintenance", value: "MAINTENANCE" },
-                { label: "Under Repair", value: "UNDER_REPAIR" },
+                { label: "Return Pending", value: "RETURN_PENDING" },
+                { label: "Returned", value: "RETURNED" },
                 { label: "Damaged", value: "DAMAGED" },
                 { label: "Disposed", value: "DISPOSED" },
                 { label: "Lost", value: "LOST" },
@@ -276,7 +277,6 @@ export default function InventoryUnitsPage() {
                 { label: "New", value: "NEW" },
                 { label: "Good", value: "GOOD" },
                 { label: "Fair", value: "FAIR" },
-                { label: "Poor", value: "POOR" },
                 { label: "Damaged", value: "DAMAGED" },
               ]}
               includeAllOption

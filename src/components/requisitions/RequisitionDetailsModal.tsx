@@ -66,11 +66,14 @@ export default function RequisitionDetailsModal({
 
   const handleSubmit = async () => {
     try {
-      await submitRequisition(requisition.id).unwrap();
+      const res = await submitRequisition(requisition.id).unwrap();
+      const needsApproval = (res?.data as any)?.requiresApproval !== false;
       toast.success(
-        requisition.status === "REJECTED"
+        !needsApproval
+          ? "Requisition submitted and approved. The store can now issue the items."
+          : requisition.status === "REJECTED"
           ? "Requisition revised and resubmitted for Super Admin approval."
-          : "Requisition submitted for departmental review."
+          : "Requisition submitted for approval."
       );
       onOpenChange(false);
     } catch (err: any) {

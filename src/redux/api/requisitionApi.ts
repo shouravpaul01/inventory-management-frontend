@@ -8,6 +8,8 @@ import {
 export type TRequisitionQueryParams = {
   requestNumber?: string;
   status?: TRequisitionStatus;
+  /** Comma separated statuses, e.g. "APPROVED,PARTIALLY_APPROVED" */
+  "status[in]"?: string;
   type?: "REQUISITION" | "ORDER";
   departmentId?: string;
   requesterId?: string;

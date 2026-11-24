@@ -90,6 +90,21 @@ export default function RequisitionTable({
             Rejected
           </Badge>
         );
+      case "PARTIALLY_FULFILLED":
+        return (
+          <Badge variant="secondary" className="bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 text-[10px] gap-1">
+            <Clock className="size-2.5" />
+            Partially Issued
+          </Badge>
+        );
+      case "FULFILLED":
+      case "CLOSED":
+        return (
+          <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600 text-[10px] gap-1">
+            <CheckCircle2 className="size-2.5" />
+            {status === "CLOSED" ? "Closed" : "Issued"}
+          </Badge>
+        );
       case "CANCELLED":
         return (
           <Badge variant="outline" className="text-muted-foreground line-through text-[10px]">

@@ -64,10 +64,15 @@ const CONDITION_STYLES: Record<
     className:
       "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400",
   },
-  POOR: {
-    label: "Poor",
+  LOST: {
+    label: "Lost",
     className:
       "bg-orange-500/10 text-orange-600 border-orange-500/20 dark:text-orange-400",
+  },
+  DISPOSED: {
+    label: "Disposed",
+    className:
+      "bg-muted text-muted-foreground border-border",
   },
   DAMAGED: {
     label: "Damaged",

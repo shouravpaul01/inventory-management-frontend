@@ -327,7 +327,7 @@ export default function ItemDetailsModal({
                   <div className="flex items-center gap-2">
                     <MapPin className="size-4 text-primary" />
                     <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                      Warehouse & Storage Location Balances
+                      Store & Storage Location Balances
                     </h4>
                   </div>
                   <span className="text-xs font-mono text-muted-foreground">
@@ -359,7 +359,7 @@ export default function ItemDetailsModal({
                             <td className="p-2.5 pl-3">
                               <div className="flex flex-col">
                                 <span className="font-medium text-foreground">
-                                  {sb.location?.name || "Central Warehouse"}
+                                  {sb.location?.name || "Central Store"}
                                 </span>
                                 <span className="font-mono text-[10px] text-muted-foreground">
                                   {sb.location?.code}

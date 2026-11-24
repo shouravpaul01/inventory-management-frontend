@@ -94,7 +94,7 @@ export default function DistributionsPage() {
           description={
             scope === "my_distributions"
               ? "View institutional equipment, lab supplies, temporary loans, and gift awards delivered or assigned to you."
-              : "Warehouse item issues, departmental gate passes, delivery challans, and physical receipt sign-offs."
+              : "Store item issues, departmental gate passes, delivery challans, and physical receipt sign-offs."
           }
         />
 
@@ -126,7 +126,7 @@ export default function DistributionsPage() {
           {canIssue && (
             <TabsTrigger value="all" className="gap-2 text-xs">
               <Layers className="size-3.5" />
-              <span>All Warehouse Dispatches</span>
+              <span>All Store Dispatches</span>
             </TabsTrigger>
           )}
         </TabsList>

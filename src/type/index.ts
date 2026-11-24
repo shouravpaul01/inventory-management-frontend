@@ -284,17 +284,18 @@ export type TInventoryItem = {
 };
 
 export type TUnitStatus =
-  | "AVAILABLE"
-  | "ALLOCATED"
+  | "IN_STOCK"
   | "RESERVED"
   | "ISSUED"
-  | "MAINTENANCE"
-  | "UNDER_REPAIR"
+  | "RETURN_PENDING"
+  | "RETURNED"
   | "DAMAGED"
+  | "LOST"
   | "DISPOSED"
-  | "LOST";
+  | "GIFTED"
+  | "MAINTENANCE";
 
-export type TUnitCondition = "NEW" | "GOOD" | "FAIR" | "POOR" | "DAMAGED";
+export type TUnitCondition = "NEW" | "GOOD" | "FAIR" | "DAMAGED" | "LOST" | "DISPOSED";
 
 export type TInventoryUnit = {
   id: string;
@@ -383,11 +384,7 @@ export type TStockTransactionType = TStockMovementType;
 export type TStockLedger = TStockMovement;
 
 // ==================== WORKFLOW TYPES ====================
-export type TIssueMode =
-  | "CONSUMABLE_DISBURSEMENT"
-  | "ASSET_ISSUANCE"
-  | "GIFT"
-  | "DEPARTMENT_TRANSFER";
+export type TIssueMode = "PERMANENT" | "TEMPORARY" | "GIFT";
 
 export type TRequisitionPriority = "LOW" | "NORMAL" | "HIGH" | "URGENT";
 
@@ -398,18 +395,25 @@ export type TRequisitionStatus =
   | "APPROVED"
   | "PARTIALLY_APPROVED"
   | "REJECTED"
-  | "CANCELLED";
+  | "PARTIALLY_FULFILLED"
+  | "FULFILLED"
+  | "CANCELLED"
+  | "CLOSED";
 
 export type TFulfillmentStatus =
   | "PENDING"
   | "PARTIALLY_FULFILLED"
-  | "FULFILLED";
+  | "FULFILLED"
+  | "CANCELLED";
 
 export type TRequestLineStatus =
   | "PENDING"
   | "APPROVED"
   | "PARTIALLY_APPROVED"
-  | "REJECTED";
+  | "REJECTED"
+  | "PARTIALLY_ISSUED"
+  | "ISSUED"
+  | "CLOSED";
 
 export type TRequisitionLine = {
   id: string;
@@ -543,7 +547,7 @@ export type TRequisition = {
 };
 
 export type TRecipientType = "INDIVIDUAL" | "DEPARTMENT" | "EVENT" | "EXTERNAL_GUEST";
-export type TDistributionStatus = "ISSUED" | "CONFIRMED" | "CANCELLED" | "DRAFT" | "DISPATCHED";
+export type TDistributionStatus = "PENDING" | "PARTIALLY_FULFILLED" | "FULFILLED" | "CANCELLED";
 export type TDeliveryStatus = "PENDING" | "DELIVERED" | "RECEIVED" | "REJECTED" | "FAILED";
 
 export type TDeliveryConfirmation = {

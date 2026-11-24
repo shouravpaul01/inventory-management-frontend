@@ -50,7 +50,7 @@ export default function DashboardPage() {
 
   const { data: recentMovementsData } = useGetStockMovementsQuery(
     { limit: 5 },
-    { skip: !can("inventory.view") }
+    { skip: !can("stock.view") }
   );
   const recentMovements = recentMovementsData?.data || [];
 
@@ -90,7 +90,7 @@ export default function DashboardPage() {
     },
     {
       title: "Stock Balances",
-      desc: "Check real-time multi-location warehouse stocks",
+      desc: "Check real-time stock across stores and locations",
       href: "/stock",
       icon: <Boxes className="size-5 text-emerald-600" />,
       permission: "stock.view",
@@ -100,7 +100,7 @@ export default function DashboardPage() {
       desc: "Track serialized physical equipment and QR tags",
       href: "/inventory-units",
       icon: <QrCode className="size-5 text-indigo-600" />,
-      permission: "inventory.view",
+      permission: "inventory_unit.view",
     },
     {
       title: "Active Distributions",
@@ -150,7 +150,7 @@ export default function DashboardPage() {
                   {department.code})
                 </>
               ) : (
-                "Real-time institutional warehouse levels, multi-tier approvals, and asset lifecycles."
+                "Real-time departmental store levels, multi-tier approvals, and asset lifecycles."
               )}
             </p>
           </div>

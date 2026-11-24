@@ -73,15 +73,6 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    updateProfile: builder.mutation<TApiResponse<TCurrentUser>, Partial<TCurrentUser>>({
-      query: (data) => ({
-        url: "/users/profile",
-        method: "PUT",
-        body: data,
-      }),
-      invalidatesTags: ["User", "Auth"],
-    }),
-
     logoutApi: builder.mutation<TApiResponse<null>, void>({
       query: () => ({
         url: "/auth/logout",
@@ -99,6 +90,5 @@ export const {
   useForgotPasswordMutation,
   useVerifyResetOtpMutation,
   useResetPasswordMutation,
-  useUpdateProfileMutation,
   useLogoutApiMutation,
 } = authApi;

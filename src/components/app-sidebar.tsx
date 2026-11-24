@@ -60,19 +60,19 @@ const inventoryNav: NavItem[] = [
     title: "Asset Units",
     url: "/inventory-units",
     icon: <QrCode className="size-4" />,
-    permission: "inventory.view",
+    permission: "inventory_unit.view",
   },
   {
     title: "Stock Balances",
     url: "/stock",
     icon: <Boxes className="size-4" />,
-    permission: "inventory.view",
+    permission: "stock.view",
   },
   {
     title: "Stock Ledger",
     url: "/stock/ledger",
     icon: <History className="size-4" />,
-    permission: "inventory.view",
+    permission: "stock.view",
   },
 ];
 
